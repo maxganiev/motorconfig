@@ -1991,7 +1991,6 @@ var checkboxConicShaft = exports.checkboxConicShaft = document.getElementById('c
 var selectorVentSystem = exports.selectorVentSystem = document.getElementById('selector-ventSystem');
 var imageDrawing = exports.imageDrawing = document.getElementById('img-drawing');
 var chart_connectionParams = exports.chart_connectionParams = document.getElementById('chart-connectionParams');
-var chart_connectionValues = exports.chart_connectionValues = document.getElementById('chart-connectionValues');
 var areaFilter = exports.areaFilter = document.getElementById('area-filter');
 var areaSelection = exports.areaSelection = document.getElementById('area-selection').firstElementChild;
 var areaRender = exports.areaRender = document.getElementById('area-render');
@@ -4501,7 +4500,7 @@ var getOptions = exports.getOptions = function () {
 				switch (_context.prev = _context.next) {
 					case 0:
 						if (!(_global_dom.selectorModel.value !== '-')) {
-							_context.next = 28;
+							_context.next = 27;
 							break;
 						}
 
@@ -4526,7 +4525,7 @@ var getOptions = exports.getOptions = function () {
 						pawtypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
 							return option.selected === true;
 						}).getAttribute('data-itemid');
-						postData = [{ type: _global_vars.motorStandartSetter.selected }, { keyword: _global_dom.inputModel.value.toUpperCase() }, { model: optionsSelector.model }, { pawtype: _global_vars.motorStandartSetter.selected === '5AI' ? pawtypeAttr.slice(2) : pawtypeAttr }, { with_brakes: optionsSelector.brakeType !== '-' }, { with_encoder: optionsSelector.encoderIsChecked }, { with_vent: optionsSelector.ventSystemOptionValue !== '-' }];
+						postData = [{ type: _global_vars.motorStandartSetter.selected }, { keyword: _global_dom.inputModel.value.toUpperCase() }, { model: optionsSelector.model }, { pawtype: _global_vars.motorStandartSetter.selected === '5AI' ? pawtypeAttr.slice(2) : pawtypeAttr }, { with_brakes: optionsSelector.brakeType !== '-' }, { with_encoder: optionsSelector.encoderIsChecked }, { with_vent: optionsSelector.ventSystemOptionValue !== '-' }, { power: _global_dom.selectorPower.value }, { rpm: _global_dom.selectorRpm.value }];
 						formData = new FormData();
 
 
@@ -4552,19 +4551,17 @@ var getOptions = exports.getOptions = function () {
 					case 15:
 						res = _context.sent;
 
-						console.log(res);
-
 						setChartConnectionDims(res);
-						_context.next = 23;
+						_context.next = 22;
 						break;
 
-					case 20:
-						_context.prev = 20;
+					case 19:
+						_context.prev = 19;
 						_context.t0 = _context['catch'](4);
 
 						console.log(_context.t0);
 
-					case 23:
+					case 22:
 
 						//resetting checkboxes:
 						_global_dom.checkboxEncoder.disabled = !_base_options_list.optionsConfig.encoderIsDisabled;
@@ -4577,12 +4574,12 @@ var getOptions = exports.getOptions = function () {
 
 						setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType);
 
-					case 28:
+					case 27:
 					case 'end':
 						return _context.stop();
 				}
 			}
-		}, _callee, this, [[4, 20]]);
+		}, _callee, this, [[4, 19]]);
 	}));
 
 	return function getOptions(_x, _x2) {
@@ -5076,32 +5073,35 @@ var optionsSelector = exports.optionsSelector = {
 	_global_dom.imageDrawing.setAttribute('src', completePath);
 }
 
-//создание табличной части с присеоед. размерами и подтягивание размеров:
-var chartSelOptions = [{ b: false, v: false, naezV: false, e: false }, { b: true, v: false, naezV: false, e: false }, { b: false, v: true, naezV: false, e: false }, { b: false, v: false, naezV: true, e: false }, { b: false, v: false, naezV: false, e: true }, { b: true, v: false, naezV: false, e: true }, { b: true, v: true, naezV: false, e: false }, { b: true, v: false, naezV: true, e: false }, { b: false, v: true, naezV: false, e: true }, { b: false, v: false, naezV: true, e: true }, { b: true, v: true, naezV: false, e: true }, { b: true, v: false, naezV: true, e: true }];
 function setChartConnectionDims(dataChart) {
-	var data = Object.entries(dataChart).filter(function (entry) {
-		return entry[1] !== '';
-	}).map(function (k) {
-		return _defineProperty({}, k[0], k[1]);
-	});
+	//first checking if returned data is object:
+	if ((typeof dataChart === 'undefined' ? 'undefined' : _typeof(dataChart)) === 'object' && !Array.isArray(dataChart)) {
 
-	fillChart(_global_dom.chart_connectionParams, data, 'keys');
-	fillChart(_global_dom.chart_connectionValues, data, 'values');
+		//fill in chart data:
+		var fillChart = function fillChart(html_parent, srcObj) {
+			while (html_parent.firstElementChild) {
+				html_parent.removeChild(html_parent.firstElementChild);
+			}
 
-	//fill in chart data:
-	function fillChart(listElem, srcObj, type) {
-		while (listElem.firstElementChild) {
-			listElem.removeChild(listElem.firstElementChild);
-		}
+			var chart = document.createElement('table');
+			chart.id = 'table_connectionParams';
 
-		srcObj.forEach(function (param) {
-			var listItem = document.createElement('li');
-			listItem.innerHTML = type === 'keys' ? Object.keys(param)[0] : Object.values(param)[0];
+			chart.innerHTML = '\n\t\t\t<tr>\n\t\t\t' + srcObj.map(function (param) {
+				return '<th> ' + Object.keys(param)[0] + ' </th>';
+			}).join('') + '\n\t\t\t</tr>\n\t\t\t<tr>\n\t\t\t' + srcObj.map(function (param) {
+				return '<td> ' + Object.values(param)[0] + ' </td>';
+			}).join('') + '\n\t\t\t</tr>\n\t\t\t';
 
-			listElem.appendChild(listItem);
+			html_parent.appendChild(chart);
+		};
+
+		var data = Object.entries(dataChart).filter(function (entry) {
+			return entry[1] !== '';
+		}).map(function (k) {
+			return _defineProperty({}, k[0], k[1]);
 		});
 
-		listElem.style.borderBottom = '0.5px #000 solid';
+		fillChart(_global_dom.chart_connectionParams, data);
 	}
 }
 

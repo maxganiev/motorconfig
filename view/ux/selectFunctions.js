@@ -10,7 +10,6 @@ import {
 	selectorVentSystem,
 	imageDrawing,
 	chart_connectionParams,
-	chart_connectionValues,
 	areaSelection,
 	areaRender,
 	listItemUpgrades,
@@ -198,7 +197,10 @@ export async function getOptions(selectorsId, operationType) {
 				{ with_brakes: optionsSelector.brakeType !== '-' },
 				{ with_encoder: optionsSelector.encoderIsChecked },
 				{ with_vent: optionsSelector.ventSystemOptionValue !== '-' },
+				{ power: selectorPower.value },
+				{ rpm: selectorRpm.value },
 			];
+
 			const formData = new FormData();
 
 			postData.forEach((obj) => {
@@ -215,8 +217,6 @@ export async function getOptions(selectorsId, operationType) {
 			});
 
 			const res = await req.json();
-			console.log(res);
-
 			setChartConnectionDims(res);
 		} catch (error) {
 			console.log(error);
@@ -550,45 +550,37 @@ function setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValu
 	imageDrawing.setAttribute('src', completePath);
 }
 
-//создание табличной части с присеоед. размерами и подтягивание размеров:
-const chartSelOptions = [
-	{ b: false, v: false, naezV: false, e: false },
-	{ b: true, v: false, naezV: false, e: false },
-	{ b: false, v: true, naezV: false, e: false },
-	{ b: false, v: false, naezV: true, e: false },
-	{ b: false, v: false, naezV: false, e: true },
-	{ b: true, v: false, naezV: false, e: true },
-	{ b: true, v: true, naezV: false, e: false },
-	{ b: true, v: false, naezV: true, e: false },
-	{ b: false, v: true, naezV: false, e: true },
-	{ b: false, v: false, naezV: true, e: true },
-	{ b: true, v: true, naezV: false, e: true },
-	{ b: true, v: false, naezV: true, e: true },
-];
 export function setChartConnectionDims(dataChart) {
-	const data = Object.entries(dataChart)
-		.filter((entry) => entry[1] !== '')
-		.map((k) => {
-			return { [k[0]]: k[1] };
-		});
+	//first checking if returned data is object:
+	if (typeof dataChart === 'object' && !Array.isArray(dataChart)) {
+		const data = Object.entries(dataChart)
+			.filter((entry) => entry[1] !== '')
+			.map((k) => {
+				return { [k[0]]: k[1] };
+			});
 
-	fillChart(chart_connectionParams, data, 'keys');
-	fillChart(chart_connectionValues, data, 'values');
+		fillChart(chart_connectionParams, data);
 
-	//fill in chart data:
-	function fillChart(listElem, srcObj, type) {
-		while (listElem.firstElementChild) {
-			listElem.removeChild(listElem.firstElementChild);
+		//fill in chart data:
+		function fillChart(html_parent, srcObj) {
+			while (html_parent.firstElementChild) {
+				html_parent.removeChild(html_parent.firstElementChild);
+			}
+
+			const chart = document.createElement('table');
+			chart.id = 'table_connectionParams';
+
+			chart.innerHTML = `
+			<tr>
+			${srcObj.map((param) => `<th> ${Object.keys(param)[0]} </th>`).join('')}
+			</tr>
+			<tr>
+			${srcObj.map((param) => `<td> ${Object.values(param)[0]} </td>`).join('')}
+			</tr>
+			`;
+
+			html_parent.appendChild(chart);
 		}
-
-		srcObj.forEach((param) => {
-			const listItem = document.createElement('li');
-			listItem.innerHTML = type === 'keys' ? Object.keys(param)[0] : Object.values(param)[0];
-
-			listElem.appendChild(listItem);
-		});
-
-		listElem.style.borderBottom = '0.5px #000 solid';
 	}
 }
 

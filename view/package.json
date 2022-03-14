@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
     "start": "webpack-dev-server --output-public-path=/build/",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "sass": "node-sass -w style_precomp/ -o ../../../theme/default/stylesheet/tool/adchr/ --recursive",
+    "dev": "concurrently \"npm run watch\" \"npm run sass\""
   },
   "license": "MIT",
   "devDependencies": {
@@ -16,7 +18,11 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-0": "^6.24.1",
+    "concurrently": "^7.0.0",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.4"
+  },
+  "dependencies": {
+    "node-sass": "^7.0.1"
   }
 }
