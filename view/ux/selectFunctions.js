@@ -199,6 +199,7 @@ export async function getOptions(selectorsId, operationType) {
 				{ with_vent: optionsSelector.ventSystemOptionValue !== '-' },
 				{ power: selectorPower.value },
 				{ rpm: selectorRpm.value },
+				{ framesize: optionsSelector.frameSize },
 			];
 
 			const formData = new FormData();

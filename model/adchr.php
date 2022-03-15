@@ -5,6 +5,7 @@ use Eloquent\CategoryProduct;
 use Eloquent\AttributeProduct;
 use Eloquent\AttributeTo;
 use Eloquent\AttributeDescription;
+use Eloquent\OptionsDimensionsAdchr;
 
 class ModelToolAdchrTestAdchr extends Model
 {
@@ -32,6 +33,8 @@ class ModelToolAdchrTestAdchr extends Model
 			->where('model', 'like', $like)
 			->get();
 
+		// $test = OptionsDimensionsAdchr::whereIn('id', ['1'])->select('tormoz')->get();
+		// echo $test;
 
 
 		return $product;
@@ -107,8 +110,12 @@ class ModelToolAdchrTestAdchr extends Model
 			->get()[0];
 	}
 
-	public function get_attrs($keyword, $type, $model, $pawtype, $with_brakes, $with_encoder, $with_vent, $power, $rpm)
+	public function get_attrs($keyword, $type, $model, $pawtype, $with_brakes, $with_encoder, $with_vent, $power, $rpm, $frameSize)
 	{
+
+		$size = $this->checkFrameSize($frameSize, $type, $model);
+		//echo $size;
+
 		$attrIds = [];
 
 		function fillAttrs(&$arr, $val)
@@ -252,6 +259,21 @@ class ModelToolAdchrTestAdchr extends Model
 				$combo_assoc = array_combine($attr_keys, $attr_values);
 
 				return $combo_assoc;
+			}
+		}
+	}
+
+	public function checkFrameSize($frameSize, $type, $model)
+	{
+		if ($frameSize < 132) {
+			return $frameSize;
+		} else {
+			if ($type === 'ESQ') {
+				$size = explode('-', substr($model, 4))[0];
+				return $size;
+			} else {
+				$size = substr($model, 5);
+				return $size;
 			}
 		}
 	}

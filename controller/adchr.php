@@ -38,7 +38,7 @@ class ControllerToolAdchrTestAdchr extends Controller
 	{
 		$this->load->model('tool/adchr/test/adchr');
 
-		$json = $this->model_tool_adchr_test_adchr->get_attrs($this->request->post['keyword'], $this->request->post['type'], $this->request->post['model'], $this->request->post['pawtype'], $this->request->post['with_brakes'], $this->request->post['with_encoder'], $this->request->post['with_vent'], $this->request->post['power'], $this->request->post['rpm']);
+		$json = $this->model_tool_adchr_test_adchr->get_attrs($this->request->post['keyword'], $this->request->post['type'], $this->request->post['model'], $this->request->post['pawtype'], $this->request->post['with_brakes'], $this->request->post['with_encoder'], $this->request->post['with_vent'], $this->request->post['power'], $this->request->post['rpm'], $this->request->post['framesize']);
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));

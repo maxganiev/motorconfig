@@ -392,19 +392,19 @@ export const optionsConfig = {
 				  motorFrameSize >= 112
 					? [
 							{
-								id: motorFrameSize >= 132 ? 'IM1001' : 'IM1081',
+								id: motorFrameSize > 132 ? 'IM1001' : 'IM1081',
 								group: 'Лапы и фланцы',
 								type: 'Лапы (1001/1081)',
 							},
 
 							{
-								id: motorFrameSize >= 132 ? 'IM2001' : 'IM2081',
+								id: motorFrameSize > 132 ? 'IM2001' : 'IM2081',
 								group: 'Лапы и фланцы',
 								type: 'Лапы + Фланец (2001/2081)',
 							},
 
 							{
-								id: motorFrameSize >= 132 ? 'IM3001' : 'IM3081',
+								id: motorFrameSize > 132 ? 'IM3001' : 'IM3081',
 								group: 'Лапы и фланцы',
 								type: 'Фланец (3081)',
 							},

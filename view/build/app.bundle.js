@@ -3268,15 +3268,15 @@ var optionsConfig = exports.optionsConfig = {
 		//лапы и фланцы (UI: select):
 		this.paws = _global_vars.motorStandartSetter.selected === '5AI' ? //if 5AI:
 		motorFrameSize >= 112 ? [{
-			id: motorFrameSize >= 132 ? 'IM1001' : 'IM1081',
+			id: motorFrameSize > 132 ? 'IM1001' : 'IM1081',
 			group: 'Лапы и фланцы',
 			type: 'Лапы (1001/1081)'
 		}, {
-			id: motorFrameSize >= 132 ? 'IM2001' : 'IM2081',
+			id: motorFrameSize > 132 ? 'IM2001' : 'IM2081',
 			group: 'Лапы и фланцы',
 			type: 'Лапы + Фланец (2001/2081)'
 		}, {
-			id: motorFrameSize >= 132 ? 'IM3001' : 'IM3081',
+			id: motorFrameSize > 132 ? 'IM3001' : 'IM3081',
 			group: 'Лапы и фланцы',
 			type: 'Фланец (3081)'
 		}] : [{
@@ -4525,7 +4525,7 @@ var getOptions = exports.getOptions = function () {
 						pawtypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
 							return option.selected === true;
 						}).getAttribute('data-itemid');
-						postData = [{ type: _global_vars.motorStandartSetter.selected }, { keyword: _global_dom.inputModel.value.toUpperCase() }, { model: optionsSelector.model }, { pawtype: _global_vars.motorStandartSetter.selected === '5AI' ? pawtypeAttr.slice(2) : pawtypeAttr }, { with_brakes: optionsSelector.brakeType !== '-' }, { with_encoder: optionsSelector.encoderIsChecked }, { with_vent: optionsSelector.ventSystemOptionValue !== '-' }, { power: _global_dom.selectorPower.value }, { rpm: _global_dom.selectorRpm.value }];
+						postData = [{ type: _global_vars.motorStandartSetter.selected }, { keyword: _global_dom.inputModel.value.toUpperCase() }, { model: optionsSelector.model }, { pawtype: _global_vars.motorStandartSetter.selected === '5AI' ? pawtypeAttr.slice(2) : pawtypeAttr }, { with_brakes: optionsSelector.brakeType !== '-' }, { with_encoder: optionsSelector.encoderIsChecked }, { with_vent: optionsSelector.ventSystemOptionValue !== '-' }, { power: _global_dom.selectorPower.value }, { rpm: _global_dom.selectorRpm.value }, { framesize: optionsSelector.frameSize }];
 						formData = new FormData();
 
 
