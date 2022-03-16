@@ -113,15 +113,15 @@ class ModelToolAdchrTestAdchr extends Model
 	public function get_attrs($keyword, $type, $model, $pawtype, $with_brakes, $with_encoder, $with_vent, $power, $rpm, $frameSize)
 	{
 
-		$size = $this->checkFrameSize($frameSize, $type, $model);
-		//echo $size;
-
 		$attrIds = [];
 
 		function fillAttrs(&$arr, $val)
 		{
 			$arr = $val;
 		}
+
+
+
 
 		//attrs ids:
 		$l30 = '50';
@@ -142,8 +142,10 @@ class ModelToolAdchrTestAdchr extends Model
 		$h = '65';
 		$h5 = '66';
 
+
+
 		//if no extra options:
-		if ($with_brakes == 'false' || $with_encoder == 'false' || $with_vent == 'false') {
+		if ($with_brakes == 'false' && $with_encoder == 'false' && $with_vent == 'false') {
 			switch ($pawtype) {
 				case 1081:
 				case 1001:
@@ -173,6 +175,10 @@ class ModelToolAdchrTestAdchr extends Model
 		}
 		// with any of extra options:
 		else {
+			$frame = $this->checkFrameSize($frameSize, $type, $model);
+			$l30 = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake')->get();
+			echo $l30;
+
 			switch ($pawtype) {
 					//5AI:
 				case 1081:
@@ -219,8 +225,6 @@ class ModelToolAdchrTestAdchr extends Model
 					return $item->to_id;
 				}
 			})->pluck('to_id')[0];
-			// print_r($attrIds);
-			// echo $to_product_id;
 
 
 
@@ -273,7 +277,39 @@ class ModelToolAdchrTestAdchr extends Model
 				return $size;
 			} else {
 				$size = substr($model, 5);
-				return $size;
+				$temp = explode(' ', $size)[2];
+				$num = implode(array_filter(str_split($temp), function ($item) {
+					return preg_match('/^[0-9]*$/', $item);
+				}));
+
+
+				$size_splitted_by_spaces = explode(' ', $size);
+
+
+				//encode possible russian letters (issues were faced with M only; M encoded to D then replaced with latin M in below):
+				$encoded = iconv('UTF-8', 'ASCII//TRANSLIT', utf8_encode($size_splitted_by_spaces[2][0]));
+
+				//ex. 160, 200 etc.
+				$frameNumber = $size_splitted_by_spaces[1];
+
+				//ex. M, S etc.
+				$frameId = str_contains($encoded, 'D') ? str_replace('D', 'M', $encoded) : $encoded;
+
+				//Id modification ref. No., ex. 2, 4, 8 etc.
+				$frameIdModif = $size_splitted_by_spaces[2][strlen($size_splitted_by_spaces[2]) - 1];
+
+				if ($frameNumber < 200) {
+					$subsize = $frameNumber . $frameId;
+					return $subsize;
+				} else {
+					if ($num < 4) {
+						$subsize = $frameNumber . $frameId . $frameIdModif;
+						return $subsize;
+					} else {
+						$subsize = $size_splitted_by_spaces[1] . $frameId . '4-8';
+						return $subsize;
+					}
+				}
 			}
 		}
 	}
