@@ -185,7 +185,11 @@ export async function getOptions(selectorsId, operationType) {
 		}
 
 		try {
-			const pawtypeAttr = Array.from(selectorPaws.children)
+			const pawTypeAttr = Array.from(selectorPaws.children)
+				.find((option) => option.selected === true)
+				.getAttribute('data-itemid');
+
+			const ventTypeAttr = Array.from(selectorVentSystem.children)
 				.find((option) => option.selected === true)
 				.getAttribute('data-itemid');
 
@@ -193,10 +197,11 @@ export async function getOptions(selectorsId, operationType) {
 				{ type: motorStandartSetter.selected },
 				{ keyword: inputModel.value.toUpperCase() },
 				{ model: optionsSelector.model },
-				{ pawtype: motorStandartSetter.selected === '5AI' ? pawtypeAttr.slice(2) : pawtypeAttr },
+				{ pawtype: motorStandartSetter.selected === '5AI' ? pawTypeAttr.slice(2) : pawTypeAttr },
 				{ with_brakes: optionsSelector.brakeType !== '-' },
 				{ with_encoder: optionsSelector.encoderIsChecked },
-				{ with_vent: optionsSelector.ventSystemOptionValue !== '-' },
+				{ with_vent: ventTypeAttr !== 'default-vent' },
+				{ with_naezd_vent: Number(ventTypeAttr.slice(1)) > 2 },
 				{ power: selectorPower.value },
 				{ rpm: selectorRpm.value },
 				{ framesize: optionsSelector.frameSize },

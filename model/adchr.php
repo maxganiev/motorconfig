@@ -33,10 +33,6 @@ class ModelToolAdchrTestAdchr extends Model
 			->where('model', 'like', $like)
 			->get();
 
-		// $test = OptionsDimensionsAdchr::whereIn('id', ['1'])->select('tormoz')->get();
-		// echo $test;
-
-
 		return $product;
 	}
 
@@ -110,7 +106,7 @@ class ModelToolAdchrTestAdchr extends Model
 			->get()[0];
 	}
 
-	public function get_attrs($keyword, $type, $model, $pawtype, $with_brakes, $with_encoder, $with_vent, $power, $rpm, $frameSize)
+	public function get_attrs($keyword, $type, $model, $pawtype, $with_brakes, $with_encoder, $with_vent, $with_naezd_vent, $power, $rpm, $frameSize)
 	{
 
 		$attrIds = [];
@@ -119,8 +115,6 @@ class ModelToolAdchrTestAdchr extends Model
 		{
 			$arr = $val;
 		}
-
-
 
 
 		//attrs ids:
@@ -141,77 +135,49 @@ class ModelToolAdchrTestAdchr extends Model
 		$h10 = '64';
 		$h = '65';
 		$h5 = '66';
+		$l4 = null;
+		$d4 = null;
 
 
+		$ifSomeOption = ($with_brakes != 'false' || $with_encoder != 'false' || $with_vent != 'false') == 1 ? true : false;
+		switch ($pawtype) {
+			case 1081:
+			case 1001:
+			case 'B3':
 
-		//if no extra options:
-		if ($with_brakes == 'false' && $with_encoder == 'false' && $with_vent == 'false') {
-			switch ($pawtype) {
-				case 1081:
-				case 1001:
-				case 'B3':
-					//'l30', 'h31', 'l1', 'l10', 'l31', 'd1', 'd10', 'b1', 'b10', 'h1', 'h10', 'h', 'h5'
-					fillAttrs($attrIds, [$l30, $h31, $l1, $l10, $l31, $d1, $d10, $b1, $b10, $h1, $h10, $h, $h5]);
+				fillAttrs($attrIds, [$l30, $h31, $l1, $l10, $l31, $d1, $d10, $b1, $b10, $h1, $h10, $h, $h5]);
+				$ifSomeOption && array_push($attrIds, $l4, $d4);
 
-					break;
+				break;
 
-				case 2001:
-				case 2081:
-				case 2181:
-				case 'B35':
-				case 'B4':
-					//'l30', 'h31', 'd24', 'l1', 'l10', 'l31', 'd1', 'd10', 'd20', 'd22', 'd25', 'b1', 'b10', 'h1', 'h10', 'h', 'h5'
-					fillAttrs($attrIds, [$l30, $h31, $d24, $l1, $l10, $l31, $d1, $d10, $d20, $d22, $d25, $b1, $b10, $h1, $h10, $h, $h5]);
-					break;
+			case 2001:
+			case 2081:
+			case 2181:
+			case 'B35':
+			case 'B4':
 
-				case 3081:
-				case 3001:
-				case 'B5':
-				case 'B14':
-					//'l30', 'h31', 'd24', 'l1', 'd1', 'd20', 'd22', 'd25', 'b1', 'h1', 'h', 'h5'
-					fillAttrs($attrIds, [$l30, $h31, $d24, $l1, $d1, $d20, $d22, $d25, $b1, $h1, $h, $h5]);
-					break;
-			}
+				fillAttrs($attrIds, [$l30, $h31, $d24, $l1, $l10, $l31, $d1, $d10, $d20, $d22, $d25, $b1, $b10, $h1, $h10, $h, $h5]);
+				$ifSomeOption && array_push($attrIds, $l4, $d4);
+
+				break;
+
+			case 3081:
+			case 3001:
+			case 'B5':
+			case 'B14':
+
+				fillAttrs($attrIds, [$l30, $h31, $d24, $l1, $d1, $d20, $d22, $d25, $b1, $h1, $h, $h5]);
+				$ifSomeOption && array_push($attrIds, $l4, $d4);
+
+				break;
 		}
-		// with any of extra options:
-		else {
-			$frame = $this->checkFrameSize($frameSize, $type, $model);
-			$l30 = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake')->get();
-			echo $l30;
 
-			switch ($pawtype) {
-					//5AI:
-				case 1081:
-				case 1001:
-				case 'B3':
-					//'l30', 'h31', 'l1', 'l10', 'l31', 'd1', 'd10', 'b1', 'b10', 'h1', 'h10', 'h', 'h5', 'd4', 'l4']
-					fillAttrs($attrIds, []);
-
-					break;
-
-				case 2001:
-				case 2081:
-				case 2181:
-				case 'B35':
-				case 'B4':
-					//'l30', 'h31', 'd24', 'l1', 'l10', 'l31', 'd1', 'd10', 'd20', 'd22', 'd25', 'b1', 'b10', 'h1', 'h10', 'h', 'h5', 'd4', 'l4'
-					fillAttrs($attrIds, []);
-					break;
-
-				case 3081:
-				case 3001:
-				case 'B5':
-				case 'B14':
-					//'l30', 'h31', 'd24', 'l1', 'd1', 'd20', 'd22', 'd25', 'b1', 'h1', 'h', 'h5'
-					fillAttrs($attrIds, []);
-					break;
-			}
-		}
 
 		//getting attributes by model input:
 		if ($power === '-' || $rpm === '-') {
-			$product = $this->get_data_by_input($keyword, $type);
 
+			//print_r($attrIds);
+			$product = $this->get_data_by_input($keyword, $type);
 
 			$to_product_id = $product->filter(function ($each) use ($model) {
 				return $each->model === $model;
@@ -232,6 +198,18 @@ class ModelToolAdchrTestAdchr extends Model
 			$attr_values = AttributeTo::where('to_id', $to_product_id)->whereIn('attribute_id', $attrIds)->select('text')->get()->pluck('text')->toArray();
 
 			$combo_assoc = array_combine($attr_keys, $attr_values);
+
+			if ($ifSomeOption) {
+				$frame = $this->checkFrameSize($frameSize, $type, $model);
+				$this->setL30($l30, $frame, $with_brakes, $with_encoder, $with_vent);
+				$combo_assoc['l30'] = $l30;
+
+				if ($with_naezd_vent != 'false') {
+					$this->setH($h, $frame);
+					$combo_assoc['h'] = $h;
+				}
+			}
+
 
 			return $combo_assoc;
 		}
@@ -261,6 +239,17 @@ class ModelToolAdchrTestAdchr extends Model
 				$attr_values = AttributeTo::where('to_id', $to_product_id)->whereIn('attribute_id', $attrIds)->select('text')->get()->pluck('text')->toArray();
 
 				$combo_assoc = array_combine($attr_keys, $attr_values);
+
+				if ($ifSomeOption) {
+					$frame = $this->checkFrameSize($frameSize, $type, $model);
+					$this->setL30($l30, $frame, $with_brakes, $with_encoder, $with_vent);
+					$combo_assoc['l30'] = $l30;
+
+					if ($with_naezd_vent != 'false') {
+						$this->setH($h, $frame);
+						$combo_assoc['h'] = $h;
+					}
+				}
 
 				return $combo_assoc;
 			}
@@ -312,5 +301,33 @@ class ModelToolAdchrTestAdchr extends Model
 				}
 			}
 		}
+	}
+
+	public function setL30(&$arg, $frame,  $with_brakes, $with_encoder, $with_vent)
+	{
+		if ($with_brakes == 'true' && $with_encoder == 'false' && $with_vent == 'false') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake')->get()[0]['with_brake'];
+		} else if ($with_brakes == 'false' && $with_encoder == 'true' && $with_vent == 'false') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_encoder')->get()[0]['with_encoder'];
+		} else if ($with_brakes == 'false' && $with_encoder == 'false' && $with_vent == 'true') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_vent')->get()[0]['with_vent'];
+		} else if ($with_brakes == 'true' && $with_encoder == 'true' && $with_vent == 'false') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake_and_encoder')->get()[0]['with_brake_and_encoder'];
+		} else if ($with_brakes == 'true' && $with_encoder == 'false' && $with_vent == 'true') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake_and_vent')->get()[0]['with_brake_and_vent'];
+		} else if ($with_brakes == 'false' && $with_encoder == 'true' && $with_vent == 'true') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_vent_and_encoder')->get()[0]['with_vent_and_encoder'];
+		} else if ($with_brakes == 'true' && $with_encoder == 'true' && $with_vent == 'true') {
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake_and_encoder_and_vent')->get()[0]['with_brake_and_encoder_and_vent'];
+		}
+
+		return $arg;
+	}
+
+	public function setH(&$arg, $frame)
+	{
+		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('height_if_naezd')->get()[0]['height_if_naezd'];
+
+		return $arg;
 	}
 }

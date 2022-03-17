@@ -4494,13 +4494,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 //получение списка опций из полей ввода (селекторы, чекбоксы):
 var getOptions = exports.getOptions = function () {
 	var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(selectorsId, operationType) {
-		var electroMagneticBreak, paws, ventSystem, pawtypeAttr, postData, formData, url, req, res, frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType;
+		var electroMagneticBreak, paws, ventSystem, pawTypeAttr, ventTypeAttr, postData, formData, url, req, res, frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType;
 		return regeneratorRuntime.wrap(function _callee$(_context) {
 			while (1) {
 				switch (_context.prev = _context.next) {
 					case 0:
 						if (!(_global_dom.selectorModel.value !== '-')) {
-							_context.next = 27;
+							_context.next = 28;
 							break;
 						}
 
@@ -4522,10 +4522,13 @@ var getOptions = exports.getOptions = function () {
 						}
 
 						_context.prev = 4;
-						pawtypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
+						pawTypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
 							return option.selected === true;
 						}).getAttribute('data-itemid');
-						postData = [{ type: _global_vars.motorStandartSetter.selected }, { keyword: _global_dom.inputModel.value.toUpperCase() }, { model: optionsSelector.model }, { pawtype: _global_vars.motorStandartSetter.selected === '5AI' ? pawtypeAttr.slice(2) : pawtypeAttr }, { with_brakes: optionsSelector.brakeType !== '-' }, { with_encoder: optionsSelector.encoderIsChecked }, { with_vent: optionsSelector.ventSystemOptionValue !== '-' }, { power: _global_dom.selectorPower.value }, { rpm: _global_dom.selectorRpm.value }, { framesize: optionsSelector.frameSize }];
+						ventTypeAttr = Array.from(_global_dom.selectorVentSystem.children).find(function (option) {
+							return option.selected === true;
+						}).getAttribute('data-itemid');
+						postData = [{ type: _global_vars.motorStandartSetter.selected }, { keyword: _global_dom.inputModel.value.toUpperCase() }, { model: optionsSelector.model }, { pawtype: _global_vars.motorStandartSetter.selected === '5AI' ? pawTypeAttr.slice(2) : pawTypeAttr }, { with_brakes: optionsSelector.brakeType !== '-' }, { with_encoder: optionsSelector.encoderIsChecked }, { with_vent: ventTypeAttr !== 'default-vent' }, { with_naezd_vent: Number(ventTypeAttr.slice(1)) > 2 }, { power: _global_dom.selectorPower.value }, { rpm: _global_dom.selectorRpm.value }, { framesize: optionsSelector.frameSize }];
 						formData = new FormData();
 
 
@@ -4534,7 +4537,7 @@ var getOptions = exports.getOptions = function () {
 						});
 
 						url = '/index.php?route=tool/adchr/test/adchr/get_attrs';
-						_context.next = 12;
+						_context.next = 13;
 						return fetch(url, {
 							method: 'POST',
 							body: formData,
@@ -4543,25 +4546,25 @@ var getOptions = exports.getOptions = function () {
 							}
 						});
 
-					case 12:
+					case 13:
 						req = _context.sent;
-						_context.next = 15;
+						_context.next = 16;
 						return req.json();
 
-					case 15:
+					case 16:
 						res = _context.sent;
 
 						setChartConnectionDims(res);
-						_context.next = 22;
+						_context.next = 23;
 						break;
 
-					case 19:
-						_context.prev = 19;
+					case 20:
+						_context.prev = 20;
 						_context.t0 = _context['catch'](4);
 
 						console.log(_context.t0);
 
-					case 22:
+					case 23:
 
 						//resetting checkboxes:
 						_global_dom.checkboxEncoder.disabled = !_base_options_list.optionsConfig.encoderIsDisabled;
@@ -4574,12 +4577,12 @@ var getOptions = exports.getOptions = function () {
 
 						setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType);
 
-					case 27:
+					case 28:
 					case 'end':
 						return _context.stop();
 				}
 			}
-		}, _callee, this, [[4, 19]]);
+		}, _callee, this, [[4, 20]]);
 	}));
 
 	return function getOptions(_x, _x2) {
