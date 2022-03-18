@@ -140,13 +140,13 @@ class ModelToolAdchrTestAdchr extends Model
 
 
 		$ifSomeOption = ($with_brakes != 'false' || $with_encoder != 'false' || $with_vent != 'false') == 1 ? true : false;
+
 		switch ($pawtype) {
 			case 1081:
 			case 1001:
 			case 'B3':
 
 				fillAttrs($attrIds, [$l30, $h31, $l1, $l10, $l31, $d1, $d10, $b1, $b10, $h1, $h10, $h, $h5]);
-				$ifSomeOption && array_push($attrIds, $l4, $d4);
 
 				break;
 
@@ -157,7 +157,6 @@ class ModelToolAdchrTestAdchr extends Model
 			case 'B4':
 
 				fillAttrs($attrIds, [$l30, $h31, $d24, $l1, $l10, $l31, $d1, $d10, $d20, $d22, $d25, $b1, $b10, $h1, $h10, $h, $h5]);
-				$ifSomeOption && array_push($attrIds, $l4, $d4);
 
 				break;
 
@@ -167,7 +166,6 @@ class ModelToolAdchrTestAdchr extends Model
 			case 'B14':
 
 				fillAttrs($attrIds, [$l30, $h31, $d24, $l1, $d1, $d20, $d22, $d25, $b1, $h1, $h, $h5]);
-				$ifSomeOption && array_push($attrIds, $l4, $d4);
 
 				break;
 		}
@@ -179,15 +177,15 @@ class ModelToolAdchrTestAdchr extends Model
 			//print_r($attrIds);
 			$product = $this->get_data_by_input($keyword, $type);
 
+
 			$to_product_id = $product->filter(function ($each) use ($model) {
 				return $each->model === $model;
 			})->values()->pluck('relOffers')->flatten(1)->filter(function ($item) use ($pawtype) {
-
 				//rel_offers[i]->model example: 5АИ 200 М 1001 - last 4 digits are being sliced out and kept with substr(strrpos - last index of ' ')
 				$pawId = substr($item->model, strrpos($item->model, ' '));
 
 				//non strict comparison as pawtype is string and pawId is number:
-				if ($pawId == $pawtype) {
+				if (trim($pawId) == $pawtype) {
 					return $item->to_id;
 				}
 			})->pluck('to_id')[0];
@@ -201,12 +199,19 @@ class ModelToolAdchrTestAdchr extends Model
 
 			if ($ifSomeOption) {
 				$frame = $this->checkFrameSize($frameSize, $type, $model);
-				$this->setL30($l30, $frame, $with_brakes, $with_encoder, $with_vent);
+				$this->setL30($l30, $type, $frame, $with_brakes, $with_encoder, $with_vent);
 				$combo_assoc['l30'] = $l30;
 
+				$this->setD4($d4, $frame);
+				$combo_assoc['d4'] = $d4;
+
+				$this->setL4($l4, $frame);
+				$combo_assoc['l4'] = $l4;
+
+
 				if ($with_naezd_vent != 'false') {
-					$this->setH($h, $frame);
-					$combo_assoc['h'] = $h;
+					$this->setH31($h31, $frame, $type);
+					$combo_assoc['h31'] = $h31;
 				}
 			}
 
@@ -230,7 +235,7 @@ class ModelToolAdchrTestAdchr extends Model
 					$pawId = substr($item->model, strrpos($item->model, ' '));
 
 					//non strict comparison as pawtype is string and pawId is number:
-					if ($pawId == $pawtype) {
+					if (trim($pawId) == $pawtype) {
 						return $item->to_id;
 					}
 				})->pluck('to_id')[0];
@@ -242,12 +247,18 @@ class ModelToolAdchrTestAdchr extends Model
 
 				if ($ifSomeOption) {
 					$frame = $this->checkFrameSize($frameSize, $type, $model);
-					$this->setL30($l30, $frame, $with_brakes, $with_encoder, $with_vent);
+					$this->setL30($l30, $type, $frame, $with_brakes, $with_encoder, $with_vent);
 					$combo_assoc['l30'] = $l30;
 
+					$this->setD4($d4, $frame);
+					$combo_assoc['d4'] = $d4;
+
+					$this->setL4($l4, $frame);
+					$combo_assoc['l4'] = $l4;
+
 					if ($with_naezd_vent != 'false') {
-						$this->setH($h, $frame);
-						$combo_assoc['h'] = $h;
+						$this->setH31($h31, $frame, $type);
+						$combo_assoc['h31'] = $h31;
 					}
 				}
 
@@ -263,6 +274,7 @@ class ModelToolAdchrTestAdchr extends Model
 		} else {
 			if ($type === 'ESQ') {
 				$size = explode('-', substr($model, 4))[0];
+				echo $size;
 				return $size;
 			} else {
 				$size = substr($model, 5);
@@ -274,12 +286,8 @@ class ModelToolAdchrTestAdchr extends Model
 
 				$size_splitted_by_spaces = explode(' ', $size);
 
-
 				//encode possible russian letters (issues were faced with M only; M encoded to D then replaced with latin M in below):
 				$encoded = iconv('UTF-8', 'ASCII//TRANSLIT', utf8_encode($size_splitted_by_spaces[2][0]));
-
-				//ex. 160, 200 etc.
-				$frameNumber = $size_splitted_by_spaces[1];
 
 				//ex. M, S etc.
 				$frameId = str_contains($encoded, 'D') ? str_replace('D', 'M', $encoded) : $encoded;
@@ -287,12 +295,12 @@ class ModelToolAdchrTestAdchr extends Model
 				//Id modification ref. No., ex. 2, 4, 8 etc.
 				$frameIdModif = $size_splitted_by_spaces[2][strlen($size_splitted_by_spaces[2]) - 1];
 
-				if ($frameNumber < 200) {
-					$subsize = $frameNumber . $frameId;
+				if ($frameSize < 200 || $frameSize == 250) {
+					$subsize = $frameSize . $frameId;
 					return $subsize;
 				} else {
 					if ($num < 4) {
-						$subsize = $frameNumber . $frameId . $frameIdModif;
+						$subsize = $frameSize . $frameId . $frameIdModif;
 						return $subsize;
 					} else {
 						$subsize = $size_splitted_by_spaces[1] . $frameId . '4-8';
@@ -303,30 +311,45 @@ class ModelToolAdchrTestAdchr extends Model
 		}
 	}
 
-	public function setL30(&$arg, $frame,  $with_brakes, $with_encoder, $with_vent)
+	public function setL30(&$arg, $type, $frame,  $with_brakes, $with_encoder, $with_vent)
 	{
+
 		if ($with_brakes == 'true' && $with_encoder == 'false' && $with_vent == 'false') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake')->get()[0]['with_brake'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_brake')->get()[0]['l30_with_brake'];
 		} else if ($with_brakes == 'false' && $with_encoder == 'true' && $with_vent == 'false') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_encoder')->get()[0]['with_encoder'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_encoder')->get()[0]['l30_with_encoder'];
 		} else if ($with_brakes == 'false' && $with_encoder == 'false' && $with_vent == 'true') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_vent')->get()[0]['with_vent'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_vent')->get()[0]['l30_with_vent'];
 		} else if ($with_brakes == 'true' && $with_encoder == 'true' && $with_vent == 'false') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake_and_encoder')->get()[0]['with_brake_and_encoder'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_brake_and_encoder')->get()[0]['l30_with_brake_and_encoder'];
 		} else if ($with_brakes == 'true' && $with_encoder == 'false' && $with_vent == 'true') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake_and_vent')->get()[0]['with_brake_and_vent'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_brake_and_vent')->get()[0]['l30_with_brake_and_vent'];
 		} else if ($with_brakes == 'false' && $with_encoder == 'true' && $with_vent == 'true') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_vent_and_encoder')->get()[0]['with_vent_and_encoder'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_vent_and_encoder')->get()[0]['l30_with_vent_and_encoder'];
 		} else if ($with_brakes == 'true' && $with_encoder == 'true' && $with_vent == 'true') {
-			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('with_brake_and_encoder_and_vent')->get()[0]['with_brake_and_encoder_and_vent'];
+			$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l30_with_brake_and_encoder_and_vent')->get()[0]['l30_with_brake_and_encoder_and_vent'];
 		}
 
 		return $arg;
 	}
 
-	public function setH(&$arg, $frame)
+	public function setH31(&$arg, $frame, $type)
 	{
-		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('height_if_naezd')->get()[0]['height_if_naezd'];
+		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('h31_if_naezd')->get()[0]['h31_if_naezd'];
+
+		return $arg;
+	}
+
+	public function setD4(&$arg, $frame)
+	{
+		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('d4')->get()[0]['d4'];
+
+		return $arg;
+	}
+
+	public function setL4(&$arg, $frame)
+	{
+		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('l4')->get()[0]['l4'];
 
 		return $arg;
 	}
