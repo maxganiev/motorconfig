@@ -202,10 +202,10 @@ class ModelToolAdchrTestAdchr extends Model
 				$this->setL30($l30, $type, $frame, $with_brakes, $with_encoder, $with_vent);
 				$combo_assoc['l30'] = $l30;
 
-				$this->setD4($d4, $frame);
+				$this->setD4($d4, $frame, $type);
 				$combo_assoc['d4'] = $d4;
 
-				$this->setL4($l4, $frame);
+				$this->setL4($l4, $frame, $type);
 				$combo_assoc['l4'] = $l4;
 
 
@@ -250,10 +250,10 @@ class ModelToolAdchrTestAdchr extends Model
 					$this->setL30($l30, $type, $frame, $with_brakes, $with_encoder, $with_vent);
 					$combo_assoc['l30'] = $l30;
 
-					$this->setD4($d4, $frame);
+					$this->setD4($d4, $frame, $type);
 					$combo_assoc['d4'] = $d4;
 
-					$this->setL4($l4, $frame);
+					$this->setL4($l4, $frame, $type);
 					$combo_assoc['l4'] = $l4;
 
 					if ($with_naezd_vent != 'false') {
@@ -274,12 +274,37 @@ class ModelToolAdchrTestAdchr extends Model
 		} else {
 			if ($type === 'ESQ') {
 				$size = explode('-', substr($model, 4))[0];
-				echo $size;
-				return $size;
+
+				//ex. M, S etc.
+				$frameId = array_filter(str_split($size), function ($item) {
+					return preg_match('/[a-zA-Z]+/', $item);
+				})[3];
+
+
+				$temp = substr($size, strpos($size, $frameSize) + strlen($frameSize));
+				//Id modification ref. No., ex. 2, 4, 8 etc.
+				$frameIdModif =  implode(array_filter(str_split($temp), function ($item) {
+					return preg_match('/^[0-9]*$/', $item);
+				}));
+
+				if ($frameSize < 225 || ($frameSize == 225 && $frameId == 'S') || ($frameSize == 250) || $frameSize == 280) {
+					$subsize = $frameSize . $frameId;
+					return $subsize;
+				} else {
+					if ($frameIdModif <= 2) {
+						$subsize = $frameSize . $frameId . $frameIdModif;
+						return $subsize;
+					} else {
+						$subsize = $frameSize . $frameId . '4-8';
+						return $subsize;
+					}
+				}
 			} else {
 				$size = substr($model, 5);
 				$temp = explode(' ', $size)[2];
-				$num = implode(array_filter(str_split($temp), function ($item) {
+
+				//Id modification ref. No., ex. 2, 4, 8 etc.
+				$frameIdModif = implode(array_filter(str_split($temp), function ($item) {
 					return preg_match('/^[0-9]*$/', $item);
 				}));
 
@@ -292,14 +317,13 @@ class ModelToolAdchrTestAdchr extends Model
 				//ex. M, S etc.
 				$frameId = str_contains($encoded, 'D') ? str_replace('D', 'M', $encoded) : $encoded;
 
-				//Id modification ref. No., ex. 2, 4, 8 etc.
-				$frameIdModif = $size_splitted_by_spaces[2][strlen($size_splitted_by_spaces[2]) - 1];
+
 
 				if ($frameSize < 200 || $frameSize == 250) {
 					$subsize = $frameSize . $frameId;
 					return $subsize;
 				} else {
-					if ($num < 4) {
+					if ($frameIdModif < 4) {
 						$subsize = $frameSize . $frameId . $frameIdModif;
 						return $subsize;
 					} else {
@@ -340,16 +364,16 @@ class ModelToolAdchrTestAdchr extends Model
 		return $arg;
 	}
 
-	public function setD4(&$arg, $frame)
+	public function setD4(&$arg, $frame, $type)
 	{
-		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('d4')->get()[0]['d4'];
+		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('d4')->get()[0]['d4'];
 
 		return $arg;
 	}
 
-	public function setL4(&$arg, $frame)
+	public function setL4(&$arg, $frame, $type)
 	{
-		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->select('l4')->get()[0]['l4'];
+		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l4')->get()[0]['l4'];
 
 		return $arg;
 	}
