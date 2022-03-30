@@ -75,18 +75,40 @@ body {
 		.mask {
 			position: absolute;
 			width: 100%;
-			background-color: rgba(0, 0, 0, 0.7);
+			background-color: rgba(0, 0, 0, 0.9);
 			z-index: 10;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			.img-status {
+				width: calc(20.2rem + 1vmin);
+			}
+
+			.spinner {
+				animation-name: animate-spinner;
+				animation-duration: 0.6s;
+				animation-iteration-count: infinite;
+				animation-fill-mode: forwards;
+				animation-direction: normal;
+				animation-timing-function: ease-in;
+			}
 		}
 
 		.area {
 			&-filter {
+				position: relative;
 				grid-column: 1/4;
 				display: flex;
 				align-items: center;
 				justify-content: space-evenly;
 				width: 100%;
 				border-bottom: 1px solid $bord-btm-light;
+
+				.container-reverse-selection {
+					position: absolute;
+					top: 10%;
+				}
 
 				.list {
 					display: flex;
@@ -183,5 +205,14 @@ body {
 		width: 100%;
 		height: 45vh;
 		background-color: $bg-emerald;
+	}
+}
+
+@keyframes animate-spinner {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
 	}
 }

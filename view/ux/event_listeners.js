@@ -9,6 +9,7 @@ import {
 	checkboxConicShaft,
 	selectorVentSystem,
 	btn,
+	input_reverseSelection,
 } from './global_dom';
 import {
 	searchModel,
@@ -18,6 +19,8 @@ import {
 	fillUpgradesChart,
 	populateOptionsList,
 	setModelName,
+	selectOptionsReversevely,
+	getModel,
 } from './selectFunctions';
 import { optionsConfig } from '../motordata/base_options_list';
 import { mask, ls_getBtnSelectorStyle, ls_getScrollPos } from '../ui/ui';
@@ -62,10 +65,15 @@ export function globeEvHandler() {
 	};
 
 	//searching for a model against input:
-	inputModel.oninput = (e) =>
+	inputModel.oninput = (e) => {
+		if (input_reverseSelection.value.length !== 0) {
+			input_reverseSelection.value = '';
+		}
+
 		setTimeout(() => {
 			searchModel(e);
-		}, 200);
+		}, 600);
+	};
 
 	//searching for a specific model agains choice of rpm or voltage:
 	selectorPower.onchange = selectorRpm.onchange = (e) => searchModel(e);
@@ -73,13 +81,11 @@ export function globeEvHandler() {
 	//selecting a motor model:
 	selectorModel.addEventListener('change', () => {
 		getOptions([selectorBrakes, selectorPaws, selectorVentSystem], 'resetOptionsList');
-		setModelName();
 	});
 
 	//selecting a paw type:
 	selectorPaws.addEventListener('change', () => {
 		getOptions(null);
-		setModelName();
 	});
 
 	//selecting a breaks type:
@@ -91,13 +97,10 @@ export function globeEvHandler() {
 			.getAttribute('data-itemid');
 
 		if (e.target.value !== '-') {
-			setModelDescription('addData', 'electroMagneticBreak', selOptionId);
+			setModelDescription('addData', selOptionId);
 		} else {
-			setModelDescription('removeData', null, selOptionId);
+			setModelDescription('removeData', selOptionId);
 		}
-
-		fillUpgradesChart();
-		setModelName();
 	});
 
 	//selecting vent system type:
@@ -117,28 +120,23 @@ export function globeEvHandler() {
 			.getAttribute('data-itemid');
 
 		if (e.target.value !== '-') {
-			setModelDescription('addData', 'ventSystem', selOptionId);
+			setModelDescription('addData', selOptionId);
 		} else {
-			setModelDescription('removeData', null, selOptionId);
+			setModelDescription('removeData', selOptionId);
 		}
-
-		fillUpgradesChart();
 
 		//refilling ip description when choosing a new type of vent:
 		const selOptionIdOptionIP = Array.from(selectorIp.children)
 			.find((child) => child.innerText === selectorIp.value)
 			.getAttribute('data-itemid');
 
-		setModelDescription('addData', 'ipVersion', selOptionIdOptionIP);
+		setModelDescription('addData', selOptionIdOptionIP);
 		setModelName();
 	});
 
 	//choosing encoder:
 	checkboxEncoder.addEventListener('change', (e) => {
 		getOptions([selectorBrakes], 'resetOptionsList');
-		setModelDescription();
-		fillUpgradesChart();
-		setModelName();
 	});
 
 	//chosing conic shaft:
@@ -146,11 +144,10 @@ export function globeEvHandler() {
 		getOptions(null);
 
 		if (e.target.checked) {
-			setModelDescription('addData', 'conicShaft', e.target.id);
+			setModelDescription('addData', e.target.id);
 		} else {
-			setModelDescription('removeData', null, e.target.id);
+			setModelDescription('removeData', e.target.id);
 		}
-		setModelName();
 	});
 
 	//обработчики с делегированием:
@@ -159,24 +156,23 @@ export function globeEvHandler() {
 			if (e.target.checked) {
 				e.target.classList.replace('checkbox-vibrosensors-unchecked', 'checkbox-vibrosensors-checked');
 
-				setModelDescription('addData', 'vibroSensors', e.target.id);
+				setModelDescription('addData', e.target.id);
 			} else {
 				e.target.classList.replace('checkbox-vibrosensors-checked', 'checkbox-vibrosensors-unchecked');
 
-				setModelDescription('removeData', null, e.target.id);
+				setModelDescription('removeData', e.target.id);
 			}
-			setModelName();
 		}
 
 		if (e.target.id === 'checkbox-antiCondenseHeater') {
 			if (e.target.checked) {
 				e.target.classList.replace('checkbox-antiCondenseHeater-unchecked', 'checkbox-antiCondenseHeater-checked');
 
-				setModelDescription('addData', 'antiCondensingHeater', e.target.id);
+				setModelDescription('addData', e.target.id);
 			} else {
 				e.target.classList.replace('checkbox-antiCondenseHeater-checked', 'checkbox-antiCondenseHeater-uchecked');
 
-				setModelDescription('removeData', null, e.target.id);
+				setModelDescription('removeData', e.target.id);
 			}
 			setModelName();
 		}
@@ -204,7 +200,7 @@ export function globeEvHandler() {
 					'checkbox-currentInsulatingBearing-checked',
 					'checkbox-currentInsulatingBearing-unchecked'
 				);
-				setModelDescription('removeData', null, e.target.id);
+				setModelDescription('removeData', e.target.id);
 			} else if (Array.from(e.target.classList).some((className) => className.includes('-unchecked'))) {
 				e.target.checked = true;
 
@@ -212,7 +208,7 @@ export function globeEvHandler() {
 					'checkbox-currentInsulatingBearing-unchecked',
 					'checkbox-currentInsulatingBearing-checked'
 				);
-				setModelDescription('addData', 'currentInsulatingBearing', e.target.id);
+				setModelDescription('addData', e.target.id);
 			}
 			setModelName();
 		}
@@ -226,9 +222,9 @@ export function globeEvHandler() {
 				.getAttribute('data-itemid');
 
 			if (e.target.value !== '-') {
-				setModelDescription('addData', 'importBearings', selOptionId);
+				setModelDescription('addData', selOptionId);
 			} else {
-				setModelDescription('removeData', null, selOptionId);
+				setModelDescription('removeData', selOptionId);
 			}
 
 			setModelName();
@@ -240,7 +236,7 @@ export function globeEvHandler() {
 				.find((child) => child.innerText === e.target.value)
 				.getAttribute('data-itemid');
 
-			setModelDescription('addData', 'climateCat', selOptionIdOptionIP);
+			setModelDescription('addData', selOptionIdOptionIP);
 			setModelName();
 		}
 
@@ -250,7 +246,7 @@ export function globeEvHandler() {
 				.find((child) => child.innerText === e.target.value)
 				.getAttribute('data-itemid');
 
-			setModelDescription('addData', 'ipVersion', selOptionId);
+			setModelDescription('addData', selOptionId);
 			fillUpgradesChart();
 
 			//перезаливка опций для системы вентиляции при смене IP:
@@ -291,7 +287,6 @@ export function globeEvHandler() {
 
 				setModelDescription(
 					'addData',
-					'tempDataSensors',
 					Array.from(e.target.classList).find((cl) => cl.includes('Б'))
 				);
 			} else if (Array.from(e.target.classList).some((className) => className.includes('btn-option-selected'))) {
@@ -299,7 +294,6 @@ export function globeEvHandler() {
 
 				setModelDescription(
 					'removeData',
-					null,
 					Array.from(e.target.classList).find((cl) => cl.includes('Б'))
 				);
 			}
@@ -310,11 +304,60 @@ export function globeEvHandler() {
 	document.body.addEventListener('input', (e) => {
 		//encoderResOptions
 		if (e.target.id === 'input-encoderResOptions') {
-			setModelDescription();
 			fillUpgradesChart();
 			setModelName();
 		}
 	});
+
+	//reverse options selection:
+	btn.btn_reverseSelection.onclick = async (e) => {
+		const input = input_reverseSelection.value.slice(
+			0,
+			input_reverseSelection.value.indexOf('-', input_reverseSelection.value.indexOf('/'))
+		);
+
+		const modelName =
+			motorStandartSetter.selected === '5AI'
+				? input
+						.split(' ')
+						.filter((item) => item.indexOf('/') === -1)
+						.join(' ')
+				: input;
+
+		if (input !== selectorModel.value) {
+			await getModel(modelName, []);
+		}
+
+		selectOptionsReversevely(e);
+	};
+
+	//decoder input control:
+	input_reverseSelection.onkeydown = (e) => {
+		if (inputModel.value.length !== 0) {
+			inputModel.value = '';
+			btn.selectorMotor_5ai.parentElement.style.visibility = 'visible';
+		}
+
+		selectorPower.value = selectorRpm.value = '-';
+
+		const permitted1 = ['v', 'a', 'c', 'x', 'z', 'r'];
+		const permitted2 = ['Tab', 'Control', 'Alt', 'Shift', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Backspace'];
+
+		if (e.ctrlKey) {
+			permitted1.indexOf(e.key) !== -1 && e.key !== 'Control' && true;
+		} else {
+			if (permitted2.indexOf(e.key) !== -1 && e.key !== 'Control') {
+				if (e.key === 'Backspace') {
+					e.target.value = '';
+				}
+				return true;
+			} else {
+				alert('Only copy paste allowed!');
+				e.preventDefault();
+				e.target.blur();
+			}
+		}
+	};
 
 	window.onresize = () => {
 		mask.mask !== undefined && typeof mask.mask !== 'undefined' && mask.getMaskParams();

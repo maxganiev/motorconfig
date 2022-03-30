@@ -3,6 +3,10 @@
 		<main>
 			<!--area filter-->
 			<section class="area-filter" id="area-filter">
+					<div class="container-reverse-selection">
+					<input type="text" id="input-reverse-selection" autocomplete=off />
+					<button class="btn btn-reverse-selection" id="btn-reverse-selection">Расшифровать</button>
+				</div>
 				<ul class="list">
 					<li>
 						<button class="btn btn-5ai-select btn-option-selected" id="btn-5ai-select">5АИ</button>
@@ -95,7 +99,7 @@
 
 					<li>
 						<label for="checkbox-encoder"> Энкодер </label>
-						<input type="checkbox" id="checkbox-encoder" />
+						<input type="checkbox" id="checkbox-encoder" data-itemId="N" />
 					</li>
 
 					<li>

@@ -16,6 +16,7 @@ import {
 	areaFilter,
 	h2ModelName,
 	btn,
+	input_reverseSelection,
 } from './global_dom';
 import { optionsConfig } from '../motordata/base_options_list';
 import { regex, motorStandartSetter } from './global_vars';
@@ -185,6 +186,8 @@ export async function getOptions(selectorsId, operationType) {
 		}
 
 		try {
+			mask.removeMask();
+
 			const pawTypeAttr = Array.from(selectorPaws.children)
 				.find((option) => option.selected === true)
 				.getAttribute('data-itemid');
@@ -193,10 +196,34 @@ export async function getOptions(selectorsId, operationType) {
 				.find((option) => option.selected === true)
 				.getAttribute('data-itemid');
 
+			const input = input_reverseSelection.value.slice(
+				0,
+				input_reverseSelection.value.indexOf('-', input_reverseSelection.value.indexOf('/'))
+			);
+
+			const modelName =
+				motorStandartSetter.selected === '5AI'
+					? input
+							.split(' ')
+							.filter((item) => item.indexOf('/') === -1)
+							.join(' ')
+					: input;
+
 			const postData = [
 				{ type: motorStandartSetter.selected },
-				{ keyword: inputModel.value.toUpperCase() },
-				{ model: optionsSelector.model },
+				{
+					keyword: inputModel.value.length > 0 ? inputModel.value.toUpperCase() : modelName,
+				},
+				{
+					model:
+						//filtering out rpm and power for 5ai
+						motorStandartSetter.selected === '5AI'
+							? optionsSelector.model
+									.split(' ')
+									.filter((item) => item.indexOf('/') === -1)
+									.join(' ')
+							: optionsSelector.model,
+				},
 				{ pawtype: motorStandartSetter.selected === '5AI' ? pawTypeAttr.slice(2) : pawTypeAttr },
 				{ with_brakes: optionsSelector.brakeType !== '-' },
 				{ with_encoder: optionsSelector.encoderIsChecked },
@@ -214,6 +241,9 @@ export async function getOptions(selectorsId, operationType) {
 			});
 
 			const url = '/index.php?route=tool/adchr/test/adchr/get_attrs';
+			mask.createMask('/image/catalog/adchr/spinner.svg');
+			mask.getMaskParams();
+
 			const req = await fetch(url, {
 				method: 'POST',
 				body: formData,
@@ -223,9 +253,18 @@ export async function getOptions(selectorsId, operationType) {
 			});
 
 			const res = await req.json();
+
 			setChartConnectionDims(res);
+			fillUpgradesChart();
+			setModelName();
+			mask.removeMask();
 		} catch (error) {
+			mask.removeMask();
+
+			mask.createMask('/image/catalog/adchr/ban.svg');
+			mask.getMaskParams();
 			console.log(error);
+			alert('Smth is broken...');
 		}
 
 		//resetting checkboxes:
@@ -279,6 +318,10 @@ export async function getModel(query, targetArr) {
 			formData.append('type', motorStandartSetter.selected);
 			formData.append('keyword', query.toUpperCase());
 			const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_input';
+
+			mask.createMask('/image/catalog/adchr/spinner.svg');
+			mask.getMaskParams();
+
 			const req = await fetch(url, {
 				method: 'POST',
 				body: formData,
@@ -289,10 +332,12 @@ export async function getModel(query, targetArr) {
 
 			const res = await req.json();
 			targetArr = res;
+			mask.removeMask();
 
 			console.log(res);
 		} catch (error) {
 			console.log(error);
+			mask.removeMask();
 		}
 	} else if (typeof query === 'object' && Array.isArray(query)) {
 		try {
@@ -324,8 +369,13 @@ export async function getModel(query, targetArr) {
 	//filling models selector with options:
 	async function fillModelsOptions(targetObject) {
 		const option = document.createElement('option');
-		option.value = targetObject.model;
-		option.innerText = targetObject.model;
+
+		option.value = option.innerText =
+			motorStandartSetter.selected === '5AI'
+				? `${targetObject.model} ${targetObject.attrs.find((item) => item.attribute_id == 33).text}/${
+						targetObject.attrs.find((item) => item.attribute_id == 36).text
+				  }`
+				: targetObject.model;
 
 		const sliced = targetObject.model
 			.slice(4)
@@ -351,7 +401,7 @@ export async function getModel(query, targetArr) {
 
 	//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
 	if (selectorModel.children[1] !== undefined && typeof selectorModel.children[1] !== undefined) {
-		document.querySelector('.mask') !== null && document.querySelector('.mask').remove();
+		mask.removeMask();
 
 		selectorModel.children[1].selected = true;
 		await getOptions([selectorBrakes, selectorPaws, selectorVentSystem], 'populateOptionsList');
@@ -365,7 +415,6 @@ export async function getModel(query, targetArr) {
 		//перезаливка описательной части для IP при поиске новой модели (всегда по умолчанию выставляется IP55 из опции 1):
 		setModelDescription(
 			'addData',
-			'ipVersion',
 			Array.from(document.getElementById('selector-ip').children)
 				.find((option) => option.selected)
 				.getAttribute('data-itemid')
@@ -374,7 +423,6 @@ export async function getModel(query, targetArr) {
 		//выставление УХЛ:
 		setModelDescription(
 			'addData',
-			'climateCat',
 			Array.from(document.getElementById('selector-climateCat').children)
 				.find((option) => option.selected)
 				.getAttribute('data-itemid')
@@ -383,7 +431,6 @@ export async function getModel(query, targetArr) {
 		//перезаливка описательной части для импортных подшипников:
 		setModelDescription(
 			'addData',
-			'importBearings',
 			Array.from(document.getElementById('selector-importBearings').children)
 				.find((option) => option.selected)
 				.getAttribute('data-itemid')
@@ -433,14 +480,12 @@ export async function getModel(query, targetArr) {
 			Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-checked')) &&
 			optionsSelector.frameSize >= 200
 		) {
-			setModelDescription('addData', 'currentInsulatingBearing', 'checkbox-currentInsulatingBearing');
+			setModelDescription('addData', 'checkbox-currentInsulatingBearing');
 		}
 	} else {
 		//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
-		if (areaFilter.nextElementSibling.className !== 'mask') {
-			mask.createMask();
-			mask.getMaskParams();
-		}
+		mask.createMask('/image/catalog/adchr/ban.svg');
+		mask.getMaskParams();
 	}
 
 	if (
@@ -591,52 +636,46 @@ export function setChartConnectionDims(dataChart) {
 }
 
 //формирование наименования описательной части к чертежу:
-export function setModelDescription(operationType, typeofDataToFill, htmlElemRef) {
+export function setModelDescription(operationType, htmlElemRef) {
 	if (operationType === 'addData') {
-		const text = Array.isArray(optionsConfig[typeofDataToFill])
-			? optionsConfig[typeofDataToFill].find((data) => data.id === htmlElemRef).description
-			: optionsConfig[typeofDataToFill].description;
-
-		addDescription(text, htmlElemRef);
+		addDescription(htmlElemRef);
 	}
 
 	if (operationType === 'removeData') {
 		removeDescription(htmlElemRef);
 	}
 
-	function addDescription(text, htmlElemRef) {
+	function addDescription(htmlElemRef) {
 		if (htmlElemRef.includes('Б1') || htmlElemRef.includes('Б3') || htmlElemRef.includes('Б5')) {
-			//listItem_wiringSensors.innerHTML = text;
-			createListItem('wiring-sensors-description', text);
+			createListItem('wiring-sensors-description', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('Б2') || htmlElemRef.includes('Б4') || htmlElemRef.includes('Б6')) {
-			//listItem_bearingSensors.innerHTML = text;
-			createListItem('bearing-sensors-description', text);
+			createListItem('bearing-sensors-description', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('checkbox-conicShaft')) {
-			createListItem('conicShaft', text);
+			createListItem('conicShaft', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('checkbox-vibrosensors')) {
-			createListItem('vibrosensors', text);
+			createListItem('vibroSensors', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('checkbox-antiCondenseHeater')) {
-			createListItem('antiCondenseHeater', text);
+			createListItem('antiCondensingHeater', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('checkbox-currentInsulatingBearing')) {
-			createListItem('currentInsulatingBearing', text);
+			createListItem('currentInsulatingBearing', htmlElemRef);
 		}
 
 		if ((htmlElemRef.includes('S1') && !htmlElemRef.includes('S12')) || htmlElemRef.includes('S12')) {
-			createListItem('importBearings', text);
+			createListItem('importBearings', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('V1') || htmlElemRef.includes('V2') || htmlElemRef.includes('V3') || htmlElemRef.includes('V4')) {
-			createListItem('ventSystem', text);
+			createListItem('ventSystem', htmlElemRef);
 		}
 
 		if (
@@ -649,7 +688,7 @@ export function setModelDescription(operationType, typeofDataToFill, htmlElemRef
 			htmlElemRef.includes('ED1ED2') ||
 			htmlElemRef.includes('ET1ET2')
 		) {
-			createListItem('electroMagneticBreak', text);
+			createListItem('electroMagneticBreak', htmlElemRef);
 		}
 
 		if (
@@ -658,76 +697,81 @@ export function setModelDescription(operationType, typeofDataToFill, htmlElemRef
 			htmlElemRef.includes('IP65') ||
 			htmlElemRef.includes('IP66')
 		) {
-			createListItem('ipVersion', text);
+			createListItem('ipVersion', htmlElemRef);
 		}
 
 		if (htmlElemRef.includes('У2') || htmlElemRef.includes('У1') || htmlElemRef.includes('УХЛ2') || htmlElemRef.includes('УХЛ1')) {
-			createListItem('climateCat', text);
+			createListItem('climateCat', htmlElemRef);
 		}
 	}
 
 	function removeDescription(htmlElemRef) {
 		const list = areaRender.lastElementChild;
 
+		function clearDesc(listItem_classname) {
+			if (document.querySelector('.' + listItem_classname) !== null) {
+				document.querySelector('.' + listItem_classname).innerHTML = '';
+				Array.from(list.children).forEach((child) => child.className.includes(listItem_classname) && child.remove());
+			}
+		}
 		if (htmlElemRef.includes('Б1') || htmlElemRef.includes('Б3') || htmlElemRef.includes('Б5')) {
-			document.querySelector('.wiring-sensors-description').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('wiring-sensors-description') && child.remove());
+			clearDesc('wiring-sensors-description');
 		}
 
 		if (htmlElemRef.includes('Б2') || htmlElemRef.includes('Б4') || htmlElemRef.includes('Б6')) {
-			document.querySelector('.bearing-sensors-description').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('bearing-sensors-description') && child.remove());
+			clearDesc('bearing-sensors-description');
 		}
 
 		if (htmlElemRef.includes('checkbox-conicShaft')) {
-			document.querySelector('.conicShaft').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('conicShaft') && child.remove());
+			clearDesc('conicShaft');
 		}
 
 		if (htmlElemRef.includes('checkbox-vibrosensors')) {
-			document.querySelector('.vibrosensors').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('vibrosensors') && child.remove());
+			clearDesc('vibroSensors');
 		}
 
 		if (htmlElemRef.includes('checkbox-antiCondenseHeater')) {
-			document.querySelector('.antiCondenseHeater').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('antiCondenseHeater') && child.remove());
+			clearDesc('antiCondensingHeater');
 		}
 
 		if (htmlElemRef.includes('checkbox-currentInsulatingBearing')) {
-			document.querySelector('.currentInsulatingBearing').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('currentInsulatingBearing') && child.remove());
+			clearDesc('currentInsulatingBearing');
 		}
 
 		if (htmlElemRef.includes('default-imp')) {
-			document.querySelector('.importBearings').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('importBearings') && child.remove());
+			clearDesc('importBearings');
 		}
 
 		if (htmlElemRef.includes('default-vent')) {
-			document.querySelector('.ventSystem').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('ventSystem') && child.remove());
+			clearDesc('ventSystem');
 		}
 
 		if (htmlElemRef.includes('default-brakes')) {
-			document.querySelector('.electroMagneticBreak').innerHTML = '';
-			Array.from(list.children).forEach((child) => child.className.includes('electroMagneticBreak') && child.remove());
+			clearDesc('electroMagneticBreak');
 		}
 	}
 
-	function createListItem(newClassName, innerHtml) {
+	function createListItem(optionsConfigPropName, htmlElemRef) {
+		const propName =
+			optionsConfigPropName.includes('wiring') || optionsConfigPropName.includes('bearing')
+				? 'tempDataSensors'
+				: optionsConfigPropName;
+
+		const text = Array.isArray(optionsConfig[propName])
+			? optionsConfig[propName].find((data) => data.id === htmlElemRef).description
+			: optionsConfig[propName].description;
+
 		const list = areaRender.lastElementChild;
 
-		Array.from(list.children).forEach((child) => child.className.includes(newClassName) && child.remove());
+		Array.from(list.children).forEach((child) => child.className.includes(optionsConfigPropName) && child.remove());
 
 		const listItem = document.createElement('li');
-		listItem.className = newClassName;
-		listItem.innerHTML = innerHtml;
+		listItem.className = optionsConfigPropName;
+		listItem.innerHTML = text;
 
 		list.insertBefore(listItem, listItemUpgrades);
 	}
 }
-
 //наполнение секции доп. доработок в случае выбора энкодера и/ или системы вентиляции и/ или тормозов:
 export function fillUpgradesChart() {
 	const { frameSize, brakeType, encoderIsChecked, ventSystemOptionValue } = optionsSelector;
@@ -924,4 +968,143 @@ export function setModelName() {
 				: '';
 		}
 	}, 10);
+}
+
+//обратный вывод опций от инпута:
+export async function selectOptionsReversevely(e) {
+	try {
+		mask.removeMask();
+
+		const areaSelection_subchilds = Array.from(areaSelection.children)
+			.slice(1)
+			.map((child) =>
+				child.firstElementChild.tagName === 'UL'
+					? Array.from(child.firstElementChild.children)
+							.reduce((acc, curr) => [...acc, curr.firstElementChild], [])
+							.concat(
+								Array.from(child.firstElementChild.nextElementSibling.children).reduce(
+									(acc, curr) => [...acc, curr.firstElementChild],
+									[]
+								)
+							)
+					: Array.from(child.children)
+			)
+			.flat(1)
+			.filter((subchild) => subchild.tagName !== 'LABEL');
+
+		//	console.log(areaSelection_subchilds);
+
+		const elements = [];
+		areaSelection_subchilds.forEach((sub) => recurse(sub));
+
+		//console.log(elements);
+
+		function recurse(elem) {
+			if (elem.firstElementChild === null) {
+				elements.push(elem);
+
+				if (elem.nextElementSibling === null) {
+					return;
+				} else {
+					recurse(elem.nextElementSibling);
+				}
+			} else {
+				recurse(elem.firstElementChild);
+			}
+		}
+
+		const arr_valueToDecode = input_reverseSelection.value
+			.split('/')[1]
+			.split('-')
+			.slice(1)
+			.map((val) =>
+				//handling case for sensors: val.length > 1 means 2 digits, like Б12, Б24 etc:
+				val[0] === 'Б'.toUpperCase() && val.length > 1
+					? val
+							.slice(1)
+							.split('')
+							.reduce((acc, curr) => [...acc, 'Б' + curr], [])
+					: val
+			)
+			.flat(1);
+
+		elements.forEach((element) => {
+			const foundIndex = arr_valueToDecode.findIndex((val) =>
+				//special case for encoder:
+				val.includes('N'.toUpperCase())
+					? element.getAttribute('data-itemid') === val.slice(0, 1)
+					: //and for the rest:
+					  element.getAttribute('data-itemid') === String(val)
+			);
+
+			switch (element.tagName) {
+				case 'OPTION':
+					element.selected = foundIndex !== -1 ? true : false;
+					element.selected && setModelDescription('addData', element.getAttribute('data-itemid'));
+
+					element.value === '-' &&
+						setModelDescription(
+							'removeData',
+							Array.from(element.parentElement.children)
+								.find((child) => child.value === '-')
+								.getAttribute('data-itemid')
+						);
+
+					break;
+
+				case 'INPUT':
+					element.checked =
+						(element.getAttribute('type') === 'checkbox' && foundIndex !== -1) ||
+						//separate case for conic shaft:
+						(element.id === 'checkbox-conicShaft' &&
+							input_reverseSelection.value[input_reverseSelection.value.length - 1] == 3)
+							? true
+							: false;
+
+					element.checked ? setModelDescription('addData', element.id) : setModelDescription('removeData', element.id);
+
+					//for elems unavailable with init render:
+					if (element.checked && element.id === 'checkbox-encoder') {
+						//returns value to input-encoderResOptions if there was any:
+						const temp = arr_valueToDecode.filter((val) => val[0].toUpperCase() === 'N')[0].slice(1);
+
+						if (document.getElementById('encoder-group-id0') === null) {
+							setTimeout(() => {
+								selectOptionsReversevely(e);
+							}, 10);
+						} else {
+							document.getElementById('input-encoderResOptions').value = temp;
+						}
+					}
+
+					break;
+
+				case 'BUTTON':
+					foundIndex !== -1
+						? element.classList.replace('btn-option-non-selected', 'btn-option-selected')
+						: element.classList.replace('btn-option-selected', 'btn-option-non-selected');
+
+					element.classList.contains('btn-option-non-selected') &&
+						setModelDescription('removeData', element.getAttribute('data-itemid'));
+
+					setTimeout(() => {
+						!element.classList.contains('btn-option-non-selected') &&
+							setModelDescription('addData', element.getAttribute('data-itemid'));
+					}, 10);
+
+					break;
+			}
+		});
+		e.target.disabled = true;
+
+		await getOptions([selectorBrakes, selectorPaws, selectorVentSystem], 'resetOptionsList');
+
+		e.target.disabled = false;
+	} catch (err) {
+		mask.createMask('/image/catalog/adchr/ban.svg');
+		mask.getMaskParams();
+		e.target.disabled = false;
+		alert('Введено что-то не то');
+		console.log(err);
+	}
 }

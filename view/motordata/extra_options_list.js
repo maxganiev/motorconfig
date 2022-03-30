@@ -12,12 +12,13 @@ export function fillExtraOptions() {
 	//проверяем были ли уже отрендерены элементы для остальных опций, которые не было жестко вбиты в исходный хмтл; если нет - добавляем их:
 	if (areaSelection.children.length <= 6) {
 		//чекбокс для выбора вибродатчиков:
-		createCheckBoxes(areaSelection, 'checkbox-vibrosensors', !vibroSensors.selectable, vibroSensors.type, null);
+		createCheckBoxes(areaSelection, 'checkbox-vibrosensors', vibroSensors.id, !vibroSensors.selectable, vibroSensors.type, null);
 
 		//чекбокс для выбора антиконденсатного подогрева:
 		createCheckBoxes(
 			areaSelection,
 			'checkbox-antiCondenseHeater',
+			antiCondensingHeater.id,
 			!antiCondensingHeater.selectable,
 			antiCondensingHeater.type,
 			null
@@ -27,6 +28,7 @@ export function fillExtraOptions() {
 		createCheckBoxes(
 			areaSelection,
 			'checkbox-currentInsulatingBearing',
+			currentInsulatingBearing.id,
 			!currentInsulatingBearing.selectable,
 			currentInsulatingBearing.type,
 			currentInsulatingBearing.checked
@@ -50,6 +52,7 @@ export function fillExtraOptions() {
 			btn.classList.add('btn-option-non-selected');
 			btn.id = `btn-options-sensors-id${index}`;
 			btn.classList.add(obj.id);
+			btn.setAttribute('data-itemId', obj.id);
 			btn.disabled = !obj.selectable;
 			btn.innerHTML = obj.type;
 
@@ -76,7 +79,7 @@ export function fillExtraOptions() {
 		createSelects(areaSelection, 'selector-ip', ipVersion);
 
 		//статический чекбокс для выбора упаковки:
-		createCheckBoxes(areaSelection, 'checkbox-package', false, 'Дополнительная упаковка оборудования', false);
+		createCheckBoxes(areaSelection, 'checkbox-package', 'pkg', false, 'Дополнительная упаковка оборудования', false);
 	}
 	//если да - берем уже существующие и перезаливаем необходимые значения:
 	else {
@@ -161,12 +164,13 @@ export function fillExtraOptions() {
 }
 
 //func to create checkboxes:
-function createCheckBoxes(parentElem, checkboxId, checkboxIsSelectable, checkboxLabelInnerHtml, checkboxIsCheckedByDefault) {
+function createCheckBoxes(parentElem, checkboxId, dataAttr, checkboxIsSelectable, checkboxLabelInnerHtml, checkboxIsCheckedByDefault) {
 	const listItem = document.createElement('li');
 
 	const checkbox = document.createElement('input');
 	checkbox.setAttribute('type', 'checkbox');
 	checkbox.id = checkboxId;
+	checkbox.setAttribute('data-itemId', dataAttr);
 	checkbox.disabled = checkboxIsSelectable;
 	checkbox.checked = checkboxIsCheckedByDefault !== null && checkboxIsCheckedByDefault;
 

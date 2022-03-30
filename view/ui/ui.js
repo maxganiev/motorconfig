@@ -5,15 +5,23 @@ export function setTransforms(htmlElem, transformVal, transformDir) {
 }
 
 export const mask = {
-	createMask: function () {
+	createMask: function (imgUrl) {
+		this.removeMask();
+
 		this.mask = document.createElement('div');
 		this.mask.setAttribute('class', 'mask');
+		this.mask.innerHTML = `<img src="${imgUrl}" class="${
+			imgUrl.includes('spinner') ? 'img-status spinner' : 'img-status'
+		}" alt="temp image" />`;
 
 		areaFilter.insertAdjacentElement('afterend', this.mask);
 	},
 	getMaskParams: function () {
 		this.mask.style.top = areaFilter.getBoundingClientRect().height + 'px';
 		this.mask.style.height = areaFilter.parentElement.clientHeight - areaFilter.clientHeight + 'px';
+	},
+	removeMask: function () {
+		this.mask !== null && this.mask != undefined && this.mask.remove();
 	},
 };
 

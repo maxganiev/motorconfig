@@ -226,7 +226,6 @@ class ModelToolAdchrTestAdchr extends Model
 			if (gettype($product) !== 'object' || count($product) !== 1) {
 				return;
 			}
-
 			//if single - returning attrs:
 			else {
 				$to_product_id = array_column((array)$product, 'relOffers')[0]->values()->flatten(1)->filter(function ($item) use ($pawtype) {
@@ -269,69 +268,78 @@ class ModelToolAdchrTestAdchr extends Model
 
 	public function checkFrameSize($frameSize, $type, $model)
 	{
-		if ($frameSize < 132) {
-			return $frameSize;
-		} else {
-			if ($type === 'ESQ') {
-				$size = explode('-', substr($model, 4))[0];
-
-				//ex. M, S etc.
-				$frameId = array_filter(str_split($size), function ($item) {
-					return preg_match('/[a-zA-Z]+/', $item);
-				})[3];
-
-
-				$temp = substr($size, strpos($size, $frameSize) + strlen($frameSize));
-				//Id modification ref. No., ex. 2, 4, 8 etc.
-				$frameIdModif =  implode(array_filter(str_split($temp), function ($item) {
-					return preg_match('/^[0-9]*$/', $item);
-				}));
-
-				if ($frameSize < 225 || ($frameSize == 225 && $frameId == 'S') || ($frameSize == 250) || $frameSize == 280) {
-					$subsize = $frameSize . $frameId;
-					return $subsize;
+		switch ($type) {
+			case '5AI':
+				if ($frameSize < 132) {
+					return $frameSize;
 				} else {
-					if ($frameIdModif <= 2) {
-						$subsize = $frameSize . $frameId . $frameIdModif;
+					$size = substr($model, 5);
+					$temp = explode(' ', $size)[2];
+
+					//Id modification ref. No., ex. 2, 4, 8 etc.
+					$frameIdModif = implode(array_filter(str_split($temp), function ($item) {
+						return preg_match('/^[0-9]*$/', $item);
+					}));
+
+
+					$size_splitted_by_spaces = explode(' ', $size);
+
+					//encode possible russian letters (issues were faced with M only; M encoded to D then replaced with latin M in below):
+					$encoded = iconv('UTF-8', 'ASCII//TRANSLIT', utf8_encode($size_splitted_by_spaces[2][0]));
+
+					//ex. M, S etc.
+					$frameId = str_contains($encoded, 'D') ? str_replace('D', 'M', $encoded) : $encoded;
+
+					if ($frameSize < 200 || $frameSize == 250) {
+						$subsize = $frameSize . $frameId;
 						return $subsize;
 					} else {
-						$subsize = $frameSize . $frameId . '4-8';
-						return $subsize;
+						if ($frameIdModif < 4) {
+							$subsize = $frameSize . $frameId . $frameIdModif;
+							return $subsize;
+						} else {
+							$subsize = $size_splitted_by_spaces[1] . $frameId . '4-8';
+							return $subsize;
+						}
 					}
 				}
-			} else {
-				$size = substr($model, 5);
-				$temp = explode(' ', $size)[2];
 
-				//Id modification ref. No., ex. 2, 4, 8 etc.
-				$frameIdModif = implode(array_filter(str_split($temp), function ($item) {
-					return preg_match('/^[0-9]*$/', $item);
-				}));
+				break;
 
-
-				$size_splitted_by_spaces = explode(' ', $size);
-
-				//encode possible russian letters (issues were faced with M only; M encoded to D then replaced with latin M in below):
-				$encoded = iconv('UTF-8', 'ASCII//TRANSLIT', utf8_encode($size_splitted_by_spaces[2][0]));
-
-				//ex. M, S etc.
-				$frameId = str_contains($encoded, 'D') ? str_replace('D', 'M', $encoded) : $encoded;
-
-
-
-				if ($frameSize < 200 || $frameSize == 250) {
-					$subsize = $frameSize . $frameId;
-					return $subsize;
+			case 'ESQ':
+				if ($frameSize < 90) {
+					return $frameSize;
 				} else {
-					if ($frameIdModif < 4) {
-						$subsize = $frameSize . $frameId . $frameIdModif;
+					//ex. 200LA2
+					$size = explode('-', substr($model, 4))[0];
+
+					$frameId_temp = array_filter(str_split($size), function ($item) {
+						return preg_match('/[a-zA-Z]+/', $item);
+					});
+					//ex. M, S etc.
+					$frameId = $frameId_temp[array_keys($frameId_temp)[0]];
+
+					$temp = substr($size, strpos($size, $frameSize) + strlen($frameSize));
+					//Id modification ref. No., ex. 2, 4, 8 etc.
+					$frameIdModif =  implode(array_filter(str_split($temp), function ($item) {
+						return preg_match('/^[0-9]*$/', $item);
+					}));
+
+					if ($frameSize < 225 || ($frameSize == 225 && $frameId == 'S') || ($frameSize == 250) || $frameSize == 280) {
+						$subsize = $frameSize . $frameId;
 						return $subsize;
 					} else {
-						$subsize = $size_splitted_by_spaces[1] . $frameId . '4-8';
-						return $subsize;
+						if ($frameIdModif <= 2) {
+							$subsize = $frameSize . $frameId . $frameIdModif;
+							return $subsize;
+						} else {
+							$subsize = $frameSize . $frameId . '4-8';
+							return $subsize;
+						}
 					}
 				}
-			}
+
+				break;
 		}
 	}
 

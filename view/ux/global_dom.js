@@ -17,4 +17,7 @@ export const h2ModelName = document.getElementById('model-name');
 export const btn = {
 	selectorMotor_5ai: document.getElementById('btn-5ai-select'),
 	selectorMotor_din: document.getElementById('btn-din-select'),
+	btn_reverseSelection: document.getElementById('btn-reverse-selection'),
 };
+
+export const input_reverseSelection = document.getElementById('input-reverse-selection');
