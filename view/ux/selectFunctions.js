@@ -187,7 +187,6 @@ export async function getOptions(selectorsId, operationType) {
 
 		try {
 			mask.removeMask();
-
 			const pawTypeAttr = Array.from(selectorPaws.children)
 				.find((option) => option.selected === true)
 				.getAttribute('data-itemid');
@@ -259,8 +258,6 @@ export async function getOptions(selectorsId, operationType) {
 			setModelName();
 			mask.removeMask();
 		} catch (error) {
-			mask.removeMask();
-
 			mask.createMask('/image/catalog/adchr/ban.svg');
 			mask.getMaskParams();
 			console.log(error);
@@ -331,13 +328,20 @@ export async function getModel(query, targetArr) {
 			});
 
 			const res = await req.json();
+			console.log(res);
+
 			targetArr = res;
 			mask.removeMask();
 
-			console.log(res);
+			if (targetArr.length === 0) {
+				mask.createMask('/image/catalog/adchr/ban.svg');
+				mask.getMaskParams();
+				alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+			}
 		} catch (error) {
 			console.log(error);
-			mask.removeMask();
+			mask.createMask('/image/catalog/adchr/ban.svg');
+			mask.getMaskParams();
 		}
 	} else if (typeof query === 'object' && Array.isArray(query)) {
 		try {
@@ -347,6 +351,10 @@ export async function getModel(query, targetArr) {
 			postData.forEach((data) => formData.append(Object.keys(data)[0], Object.values(data)[0]));
 
 			const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
+
+			mask.createMask('/image/catalog/adchr/spinner.svg');
+			mask.getMaskParams();
+
 			const req = await fetch(url, {
 				method: 'POST',
 				body: formData,
@@ -356,11 +364,13 @@ export async function getModel(query, targetArr) {
 			});
 
 			const res = await req.json();
-			targetArr = res;
-
 			console.log(res);
+			targetArr = res;
+			mask.removeMask();
 		} catch (error) {
 			console.log(error);
+			mask.createMask('/image/catalog/adchr/ban.svg');
+			mask.getMaskParams();
 		}
 	}
 
@@ -973,8 +983,7 @@ export function setModelName() {
 //обратный вывод опций от инпута:
 export async function selectOptionsReversevely(e) {
 	try {
-		mask.removeMask();
-
+		//mask.removeMask();
 		const areaSelection_subchilds = Array.from(areaSelection.children)
 			.slice(1)
 			.map((child) =>
@@ -1057,9 +1066,20 @@ export async function selectOptionsReversevely(e) {
 						(element.getAttribute('type') === 'checkbox' && foundIndex !== -1) ||
 						//separate case for conic shaft:
 						(element.id === 'checkbox-conicShaft' &&
+							//exclusion for B3 ESQ type
+							input_reverseSelection.value[input_reverseSelection.value.length - 2] !== 'B' &&
 							input_reverseSelection.value[input_reverseSelection.value.length - 1] == 3)
 							? true
 							: false;
+
+					//resetting pawtype option comparing to decoder input and regardless of last digit:
+					if (element.id === 'checkbox-conicShaft' && element.checked) {
+						Array.from(selectorPaws.children).find(
+							(option) =>
+								option.getAttribute('data-itemid').slice(0, 5) ==
+								arr_valueToDecode[arr_valueToDecode.length - 1].slice(0, 5)
+						).selected = true;
+					}
 
 					element.checked ? setModelDescription('addData', element.id) : setModelDescription('removeData', element.id);
 
@@ -1095,10 +1115,9 @@ export async function selectOptionsReversevely(e) {
 					break;
 			}
 		});
+
 		e.target.disabled = true;
-
 		await getOptions([selectorBrakes, selectorPaws, selectorVentSystem], 'resetOptionsList');
-
 		e.target.disabled = false;
 	} catch (err) {
 		mask.createMask('/image/catalog/adchr/ban.svg');

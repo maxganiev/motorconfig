@@ -76,7 +76,7 @@ export function globeEvHandler() {
 	};
 
 	//searching for a specific model agains choice of rpm or voltage:
-	selectorPower.onchange = selectorRpm.onchange = (e) => searchModel(e);
+	selectorPower.onchange = selectorRpm.onchange = (e) => e.target.value !== '-' && searchModel(e);
 
 	//selecting a motor model:
 	selectorModel.addEventListener('change', () => {
@@ -316,25 +316,36 @@ export function globeEvHandler() {
 			input_reverseSelection.value.indexOf('-', input_reverseSelection.value.indexOf('/'))
 		);
 
-		const modelName =
-			motorStandartSetter.selected === '5AI'
-				? input
-						.split(' ')
-						.filter((item) => item.indexOf('/') === -1)
-						.join(' ')
-				: input;
+		if (
+			(motorStandartSetter.selected === '5AI' && input.toUpperCase().includes('ESQ')) ||
+			(motorStandartSetter.selected === 'ESQ' && input.toUpperCase().includes('5АИ')) ||
+			(!input.toUpperCase().includes('ESQ') && !input.toUpperCase().includes('5АИ'))
+		) {
+			mask.createMask('/image/catalog/adchr/ban.svg');
+			mask.getMaskParams();
+			alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+		} else {
+			const modelName =
+				motorStandartSetter.selected === '5AI'
+					? input
+							.split(' ')
+							.filter((item) => item.indexOf('/') === -1)
+							.join(' ')
+					: input;
 
-		if (input !== selectorModel.value) {
-			await getModel(modelName, []);
+			if (input !== selectorModel.value) {
+				await getModel(modelName, []);
+			}
+
+			selectorModel.children.length > 1 && selectOptionsReversevely(e);
 		}
-
-		selectOptionsReversevely(e);
 	};
 
 	//decoder input control:
 	input_reverseSelection.onkeydown = (e) => {
-		if (inputModel.value.length !== 0) {
+		if (inputModel.value.length !== 0 || selectorPower !== '-' || selectorRpm !== '-') {
 			inputModel.value = '';
+			selectorPower.children[0].selected = selectorRpm.children[0].selected = true;
 			btn.selectorMotor_5ai.parentElement.style.visibility = 'visible';
 		}
 

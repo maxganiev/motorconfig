@@ -104,7 +104,7 @@
 
 					<li>
 						<label for="checkbox-conicShaft"> Конический вал </label>
-						<input type="checkbox" id="checkbox-conicShaft" />
+						<input type="checkbox" id="checkbox-conicShaft" data-itemId="conicshaft" />
 					</li>
 				</ul>
 			</section>

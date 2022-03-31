@@ -4503,7 +4503,7 @@ var getOptions = exports.getOptions = function () {
 				switch (_context.prev = _context.next) {
 					case 0:
 						if (!(_global_dom.selectorModel.value !== '-')) {
-							_context.next = 40;
+							_context.next = 39;
 							break;
 						}
 
@@ -4527,7 +4527,6 @@ var getOptions = exports.getOptions = function () {
 						_context.prev = 4;
 
 						_ui.mask.removeMask();
-
 						pawTypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
 							return option.selected === true;
 						}).getAttribute('data-itemid');
@@ -4581,21 +4580,19 @@ var getOptions = exports.getOptions = function () {
 						fillUpgradesChart();
 						setModelName();
 						_ui.mask.removeMask();
-						_context.next = 35;
+						_context.next = 34;
 						break;
 
 					case 28:
 						_context.prev = 28;
 						_context.t0 = _context['catch'](4);
 
-						_ui.mask.removeMask();
-
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
 						console.log(_context.t0);
 						alert('Smth is broken...');
 
-					case 35:
+					case 34:
 
 						//resetting checkboxes:
 						_global_dom.checkboxEncoder.disabled = !_base_options_list.optionsConfig.encoderIsDisabled;
@@ -4608,7 +4605,7 @@ var getOptions = exports.getOptions = function () {
 
 						setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType);
 
-					case 40:
+					case 39:
 					case 'end':
 						return _context.stop();
 				}
@@ -4676,7 +4673,7 @@ var getModel = exports.getModel = function () {
 				switch (_context3.prev = _context3.next) {
 					case 0:
 						if (!(query.length > 4 && query.match(_global_vars.regex) !== null && typeof query === 'string')) {
-							_context3.next = 25;
+							_context3.next = 27;
 							break;
 						}
 
@@ -4708,31 +4705,38 @@ var getModel = exports.getModel = function () {
 					case 13:
 						res = _context3.sent;
 
+						console.log(res);
+
 						targetArr = res;
 						_ui.mask.removeMask();
 
-						console.log(res);
-						_context3.next = 23;
+						if (targetArr.length === 0) {
+							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+							_ui.mask.getMaskParams();
+							alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+						}
+						_context3.next = 25;
 						break;
 
-					case 19:
-						_context3.prev = 19;
+					case 20:
+						_context3.prev = 20;
 						_context3.t0 = _context3['catch'](1);
 
 						console.log(_context3.t0);
-						_ui.mask.removeMask();
-
-					case 23:
-						_context3.next = 44;
-						break;
+						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+						_ui.mask.getMaskParams();
 
 					case 25:
+						_context3.next = 51;
+						break;
+
+					case 27:
 						if (!((typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query))) {
-							_context3.next = 44;
+							_context3.next = 51;
 							break;
 						}
 
-						_context3.prev = 26;
+						_context3.prev = 28;
 						_formData = new FormData();
 						postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: _global_vars.motorStandartSetter.selected }];
 
@@ -4741,7 +4745,12 @@ var getModel = exports.getModel = function () {
 						});
 
 						_url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
-						_context3.next = 33;
+
+
+						_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
+						_ui.mask.getMaskParams();
+
+						_context3.next = 37;
 						return fetch(_url, {
 							method: 'POST',
 							body: _formData,
@@ -4750,27 +4759,29 @@ var getModel = exports.getModel = function () {
 							}
 						});
 
-					case 33:
+					case 37:
 						_req = _context3.sent;
-						_context3.next = 36;
+						_context3.next = 40;
 						return _req.json();
 
-					case 36:
+					case 40:
 						_res = _context3.sent;
 
-						targetArr = _res;
-
 						console.log(_res);
-						_context3.next = 44;
+						targetArr = _res;
+						_ui.mask.removeMask();
+						_context3.next = 51;
 						break;
 
-					case 41:
-						_context3.prev = 41;
-						_context3.t1 = _context3['catch'](26);
+					case 46:
+						_context3.prev = 46;
+						_context3.t1 = _context3['catch'](28);
 
 						console.log(_context3.t1);
+						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+						_ui.mask.getMaskParams();
 
-					case 44:
+					case 51:
 
 						Array.from(_global_dom.selectorModel.children).forEach(function (child, index) {
 							return index !== 0 && child.remove();
@@ -4789,17 +4800,17 @@ var getModel = exports.getModel = function () {
 						//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
 
 						if (!(_global_dom.selectorModel.children[1] !== undefined && _typeof(_global_dom.selectorModel.children[1]) !== undefined)) {
-							_context3.next = 63;
+							_context3.next = 70;
 							break;
 						}
 
 						_ui.mask.removeMask();
 
 						_global_dom.selectorModel.children[1].selected = true;
-						_context3.next = 51;
+						_context3.next = 58;
 						return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'populateOptionsList');
 
-					case 51:
+					case 58:
 
 						//перезаливка наименования:
 						setModelName();
@@ -4860,15 +4871,15 @@ var getModel = exports.getModel = function () {
 						}) && optionsSelector.frameSize >= 200) {
 							setModelDescription('addData', 'checkbox-currentInsulatingBearing');
 						}
-						_context3.next = 65;
+						_context3.next = 72;
 						break;
 
-					case 63:
+					case 70:
 						//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
 
-					case 65:
+					case 72:
 
 						if (typeof query === 'string' && query.length < 4 && !query.match(_global_vars.regex) || (typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query) && query.some(function (param) {
 							return param === '-';
@@ -4878,12 +4889,12 @@ var getModel = exports.getModel = function () {
 							});
 						}
 
-					case 66:
+					case 73:
 					case 'end':
 						return _context3.stop();
 				}
 			}
-		}, _callee3, this, [[1, 19], [26, 41]]);
+		}, _callee3, this, [[1, 20], [28, 46]]);
 	}));
 
 	return function getModel(_x3, _x4) {
@@ -4921,8 +4932,7 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 							}
 						};
 
-						_ui.mask.removeMask();
-
+						//mask.removeMask();
 						areaSelection_subchilds = Array.from(_global_dom.areaSelection.children).slice(1).map(function (child) {
 							return child.firstElementChild.tagName === 'UL' ? Array.from(child.firstElementChild.children).reduce(function (acc, curr) {
 								return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
@@ -4972,7 +4982,16 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 								case 'INPUT':
 									element.checked = element.getAttribute('type') === 'checkbox' && foundIndex !== -1 ||
 									//separate case for conic shaft:
-									element.id === 'checkbox-conicShaft' && _global_dom.input_reverseSelection.value[_global_dom.input_reverseSelection.value.length - 1] == 3 ? true : false;
+									element.id === 'checkbox-conicShaft' &&
+									//exclusion for B3 ESQ type
+									_global_dom.input_reverseSelection.value[_global_dom.input_reverseSelection.value.length - 2] !== 'B' && _global_dom.input_reverseSelection.value[_global_dom.input_reverseSelection.value.length - 1] == 3 ? true : false;
+
+									//resetting pawtype option comparing to decoder input and regardless of last digit:
+									if (element.id === 'checkbox-conicShaft' && element.checked) {
+										Array.from(_global_dom.selectorPaws.children).find(function (option) {
+											return option.getAttribute('data-itemid').slice(0, 5) == arr_valueToDecode[arr_valueToDecode.length - 1].slice(0, 5);
+										}).selected = true;
+									}
 
 									element.checked ? setModelDescription('addData', element.id) : setModelDescription('removeData', element.id);
 
@@ -5006,19 +5025,18 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 									break;
 							}
 						});
-						e.target.disabled = true;
 
-						_context4.next = 11;
+						e.target.disabled = true;
+						_context4.next = 10;
 						return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'resetOptionsList');
 
-					case 11:
-
+					case 10:
 						e.target.disabled = false;
-						_context4.next = 21;
+						_context4.next = 20;
 						break;
 
-					case 14:
-						_context4.prev = 14;
+					case 13:
+						_context4.prev = 13;
 						_context4.t0 = _context4['catch'](0);
 
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
@@ -5027,12 +5045,12 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 						alert('Введено что-то не то');
 						console.log(_context4.t0);
 
-					case 21:
+					case 20:
 					case 'end':
 						return _context4.stop();
 				}
 			}
-		}, _callee4, this, [[0, 14]]);
+		}, _callee4, this, [[0, 13]]);
 	}));
 
 	return function selectOptionsReversevely(_x6) {
@@ -11354,7 +11372,7 @@ function globeEvHandler() {
 
 	//searching for a specific model agains choice of rpm or voltage:
 	_global_dom.selectorPower.onchange = _global_dom.selectorRpm.onchange = function (e) {
-		return (0, _selectFunctions.searchModel)(e);
+		return e.target.value !== '-' && (0, _selectFunctions.searchModel)(e);
 	};
 
 	//selecting a motor model:
@@ -11592,23 +11610,36 @@ function globeEvHandler() {
 					switch (_context.prev = _context.next) {
 						case 0:
 							input = _global_dom.input_reverseSelection.value.slice(0, _global_dom.input_reverseSelection.value.indexOf('-', _global_dom.input_reverseSelection.value.indexOf('/')));
+
+							if (!(_global_vars.motorStandartSetter.selected === '5AI' && input.toUpperCase().includes('ESQ') || _global_vars.motorStandartSetter.selected === 'ESQ' && input.toUpperCase().includes('5АИ') || !input.toUpperCase().includes('ESQ') && !input.toUpperCase().includes('5АИ'))) {
+								_context.next = 7;
+								break;
+							}
+
+							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+							_ui.mask.getMaskParams();
+							alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+							_context.next = 12;
+							break;
+
+						case 7:
 							modelName = _global_vars.motorStandartSetter.selected === '5AI' ? input.split(' ').filter(function (item) {
 								return item.indexOf('/') === -1;
 							}).join(' ') : input;
 
 							if (!(input !== _global_dom.selectorModel.value)) {
-								_context.next = 5;
+								_context.next = 11;
 								break;
 							}
 
-							_context.next = 5;
+							_context.next = 11;
 							return (0, _selectFunctions.getModel)(modelName, []);
 
-						case 5:
+						case 11:
 
-							(0, _selectFunctions.selectOptionsReversevely)(e);
+							_global_dom.selectorModel.children.length > 1 && (0, _selectFunctions.selectOptionsReversevely)(e);
 
-						case 6:
+						case 12:
 						case 'end':
 							return _context.stop();
 					}
@@ -11623,8 +11654,9 @@ function globeEvHandler() {
 
 	//decoder input control:
 	_global_dom.input_reverseSelection.onkeydown = function (e) {
-		if (_global_dom.inputModel.value.length !== 0) {
+		if (_global_dom.inputModel.value.length !== 0 || _global_dom.selectorPower !== '-' || _global_dom.selectorRpm !== '-') {
 			_global_dom.inputModel.value = '';
+			_global_dom.selectorPower.children[0].selected = _global_dom.selectorRpm.children[0].selected = true;
 			_global_dom.btn.selectorMotor_5ai.parentElement.style.visibility = 'visible';
 		}
 
