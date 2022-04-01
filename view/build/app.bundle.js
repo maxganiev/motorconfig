@@ -4490,25 +4490,24 @@ module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh)
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.selectOptionsReversevely = exports.getModel = exports.getOptions = exports.optionsSelector = undefined;
+exports.selectOptionsReversevely = exports.getOptions = exports.optionsSelector = exports.models = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 //получение списка опций из полей ввода (селекторы, чекбоксы):
 var getOptions = exports.getOptions = function () {
-	var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(selectorsId, operationType) {
+	var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(selectorsId, operationType) {
 		var electroMagneticBreak, paws, ventSystem, pawTypeAttr, ventTypeAttr, input, modelName, postData, formData, url, req, res, frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType;
-		return regeneratorRuntime.wrap(function _callee$(_context) {
+		return regeneratorRuntime.wrap(function _callee3$(_context3) {
 			while (1) {
-				switch (_context.prev = _context.next) {
+				switch (_context3.prev = _context3.next) {
 					case 0:
 						if (!(_global_dom.selectorModel.value !== '-')) {
-							_context.next = 39;
+							_context3.next = 40;
 							break;
 						}
 
 						optionsSelector.setOptionsList();
-
 						electroMagneticBreak = _base_options_list.optionsConfig.electroMagneticBreak, paws = _base_options_list.optionsConfig.paws, ventSystem = _base_options_list.optionsConfig.ventSystem;
 
 
@@ -4524,7 +4523,7 @@ var getOptions = exports.getOptions = function () {
 							}
 						}
 
-						_context.prev = 4;
+						_context3.prev = 4;
 
 						_ui.mask.removeMask();
 						pawTypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
@@ -4533,10 +4532,10 @@ var getOptions = exports.getOptions = function () {
 						ventTypeAttr = Array.from(_global_dom.selectorVentSystem.children).find(function (option) {
 							return option.selected === true;
 						}).getAttribute('data-itemid');
-						input = _global_dom.input_reverseSelection.value.slice(0, _global_dom.input_reverseSelection.value.indexOf('-', _global_dom.input_reverseSelection.value.indexOf('/')));
-						modelName = _global_vars.motorStandartSetter.selected === '5AI' ? input.split(' ').filter(function (item) {
+						input = _global_dom.input_reverseSelection.value.length > 0 ? _global_dom.input_reverseSelection.value.slice(0, _global_dom.input_reverseSelection.value.indexOf('-', _global_dom.input_reverseSelection.value.indexOf('/'))) : null;
+						modelName = _global_vars.motorStandartSetter.selected === '5AI' && input !== null ? input.split(' ').filter(function (item) {
 							return item.indexOf('/') === -1;
-						}).join(' ') : input;
+						}).join(' ') : _global_vars.motorStandartSetter.selected === 'ESQ' && input !== null ? input : null;
 						postData = [{ type: _global_vars.motorStandartSetter.selected }, {
 							keyword: _global_dom.inputModel.value.length > 0 ? _global_dom.inputModel.value.toUpperCase() : modelName
 						}, {
@@ -4558,7 +4557,7 @@ var getOptions = exports.getOptions = function () {
 						_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
 						_ui.mask.getMaskParams();
 
-						_context.next = 18;
+						_context3.next = 18;
 						return fetch(url, {
 							method: 'POST',
 							body: formData,
@@ -4568,31 +4567,41 @@ var getOptions = exports.getOptions = function () {
 						});
 
 					case 18:
-						req = _context.sent;
-						_context.next = 21;
+						req = _context3.sent;
+						_context3.next = 21;
 						return req.json();
 
 					case 21:
-						res = _context.sent;
+						res = _context3.sent;
 
 
-						setChartConnectionDims(res);
+						motorCost.calculateCost(postData.filter(function (data) {
+							return Object.keys(data)[0] === 'model';
+						})[0].model, postData.filter(function (data) {
+							return Object.keys(data)[0] === 'pawtype';
+						})[0].pawtype, res.find(function (r) {
+							return Object.keys(r)[0] === 'pricelist';
+						}).pricelist);
+
+						setChartConnectionDims(res.find(function (r) {
+							return Object.keys(r)[0] === 'dims';
+						}).dims);
 						fillUpgradesChart();
 						setModelName();
 						_ui.mask.removeMask();
-						_context.next = 34;
+						_context3.next = 35;
 						break;
 
-					case 28:
-						_context.prev = 28;
-						_context.t0 = _context['catch'](4);
+					case 29:
+						_context3.prev = 29;
+						_context3.t0 = _context3['catch'](4);
 
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
-						console.log(_context.t0);
+						console.log(_context3.t0);
 						alert('Smth is broken...');
 
-					case 34:
+					case 35:
 
 						//resetting checkboxes:
 						_global_dom.checkboxEncoder.disabled = !_base_options_list.optionsConfig.encoderIsDisabled;
@@ -4605,351 +4614,35 @@ var getOptions = exports.getOptions = function () {
 
 						setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType);
 
-					case 39:
+					case 40:
 					case 'end':
-						return _context.stop();
+						return _context3.stop();
 				}
 			}
-		}, _callee, this, [[4, 28]]);
+		}, _callee3, this, [[4, 29]]);
 	}));
 
-	return function getOptions(_x, _x2) {
-		return _ref.apply(this, arguments);
+	return function getOptions(_x3, _x4) {
+		return _ref3.apply(this, arguments);
 	};
 }();
 
 //функция для наполнения списка опций:
 
 
-//поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
-var getModel = exports.getModel = function () {
-	var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(query, targetArr) {
-
-		//filling models selector with options:
-		var fillModelsOptions = function () {
-			var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(targetObject) {
-				var option, sliced, frameSize;
-				return regeneratorRuntime.wrap(function _callee2$(_context2) {
-					while (1) {
-						switch (_context2.prev = _context2.next) {
-							case 0:
-								option = document.createElement('option');
-
-
-								option.value = option.innerText = _global_vars.motorStandartSetter.selected === '5AI' ? targetObject.model + ' ' + targetObject.attrs.find(function (item) {
-									return item.attribute_id == 33;
-								}).text + '/' + targetObject.attrs.find(function (item) {
-									return item.attribute_id == 36;
-								}).text : targetObject.model;
-
-								sliced = targetObject.model.slice(4).split('').map(function (w) {
-									return w !== ' ' && !isNaN(Number(w)) && Number(w);
-								});
-								frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
-
-								option.setAttribute('data-itemId', frameSize);
-								_global_dom.selectorModel.appendChild(option);
-
-							case 6:
-							case 'end':
-								return _context2.stop();
-						}
-					}
-				}, _callee2, this);
-			}));
-
-			return function fillModelsOptions(_x5) {
-				return _ref3.apply(this, arguments);
-			};
-		}();
-
-		//if received json is array:
-
-
-		var formData, url, req, res, _formData, postData, _url, _req, _res, targetObj, checkboxCurrentInsulatingBearing, selectorImportBearings;
-
-		return regeneratorRuntime.wrap(function _callee3$(_context3) {
-			while (1) {
-				switch (_context3.prev = _context3.next) {
-					case 0:
-						if (!(query.length > 4 && query.match(_global_vars.regex) !== null && typeof query === 'string')) {
-							_context3.next = 27;
-							break;
-						}
-
-						_context3.prev = 1;
-						formData = new FormData();
-
-						formData.append('type', _global_vars.motorStandartSetter.selected);
-						formData.append('keyword', query.toUpperCase());
-						url = '/index.php?route=tool/adchr/test/adchr/get_data_by_input';
-
-
-						_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
-						_ui.mask.getMaskParams();
-
-						_context3.next = 10;
-						return fetch(url, {
-							method: 'POST',
-							body: formData,
-							headers: {
-								Accept: 'application/json'
-							}
-						});
-
-					case 10:
-						req = _context3.sent;
-						_context3.next = 13;
-						return req.json();
-
-					case 13:
-						res = _context3.sent;
-
-						console.log(res);
-
-						targetArr = res;
-						_ui.mask.removeMask();
-
-						if (targetArr.length === 0) {
-							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
-							_ui.mask.getMaskParams();
-							alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
-						}
-						_context3.next = 25;
-						break;
-
-					case 20:
-						_context3.prev = 20;
-						_context3.t0 = _context3['catch'](1);
-
-						console.log(_context3.t0);
-						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
-						_ui.mask.getMaskParams();
-
-					case 25:
-						_context3.next = 51;
-						break;
-
-					case 27:
-						if (!((typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query))) {
-							_context3.next = 51;
-							break;
-						}
-
-						_context3.prev = 28;
-						_formData = new FormData();
-						postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: _global_vars.motorStandartSetter.selected }];
-
-						postData.forEach(function (data) {
-							return _formData.append(Object.keys(data)[0], Object.values(data)[0]);
-						});
-
-						_url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
-
-
-						_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
-						_ui.mask.getMaskParams();
-
-						_context3.next = 37;
-						return fetch(_url, {
-							method: 'POST',
-							body: _formData,
-							headers: {
-								Accept: 'application/json'
-							}
-						});
-
-					case 37:
-						_req = _context3.sent;
-						_context3.next = 40;
-						return _req.json();
-
-					case 40:
-						_res = _context3.sent;
-
-						console.log(_res);
-						targetArr = _res;
-						_ui.mask.removeMask();
-						_context3.next = 51;
-						break;
-
-					case 46:
-						_context3.prev = 46;
-						_context3.t1 = _context3['catch'](28);
-
-						console.log(_context3.t1);
-						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
-						_ui.mask.getMaskParams();
-
-					case 51:
-
-						Array.from(_global_dom.selectorModel.children).forEach(function (child, index) {
-							return index !== 0 && child.remove();
-						});if ((typeof targetArr === 'undefined' ? 'undefined' : _typeof(targetArr)) === 'object' && Array.isArray(targetArr)) {
-							targetArr.forEach(function (obj) {
-								fillModelsOptions(obj);
-							});
-						}
-						//else if received json is a single object:
-						else {
-								targetObj = targetArr;
-
-								fillModelsOptions(targetObj);
-							}
-
-						//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
-
-						if (!(_global_dom.selectorModel.children[1] !== undefined && _typeof(_global_dom.selectorModel.children[1]) !== undefined)) {
-							_context3.next = 70;
-							break;
-						}
-
-						_ui.mask.removeMask();
-
-						_global_dom.selectorModel.children[1].selected = true;
-						_context3.next = 58;
-						return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'populateOptionsList');
-
-					case 58:
-
-						//перезаливка наименования:
-						setModelName();
-
-						//выставление IP55 по умолчанию при поиске новой модели:
-						document.getElementById('selector-ip').children[0].selected = true;
-
-						//перезаливка описательной части для IP при поиске новой модели (всегда по умолчанию выставляется IP55 из опции 1):
-						setModelDescription('addData', Array.from(document.getElementById('selector-ip').children).find(function (option) {
-							return option.selected;
-						}).getAttribute('data-itemid'));
-
-						//выставление УХЛ:
-						setModelDescription('addData', Array.from(document.getElementById('selector-climateCat').children).find(function (option) {
-							return option.selected;
-						}).getAttribute('data-itemid'));
-
-						//перезаливка описательной части для импортных подшипников:
-						setModelDescription('addData', Array.from(document.getElementById('selector-importBearings').children).find(function (option) {
-							return option.selected;
-						}).getAttribute('data-itemid'));
-
-						//перезаливка и перевыставление атр. checked и disabled для токоизю подшипника и импортных подшипников:
-						checkboxCurrentInsulatingBearing = document.getElementById('checkbox-currentInsulatingBearing');
-						selectorImportBearings = document.getElementById('selector-importBearings');
-
-
-						if (Array.from(checkboxCurrentInsulatingBearing.classList).some(function (className) {
-							return className.includes('-checked');
-						}) && optionsSelector.frameSize < 200) {
-							checkboxCurrentInsulatingBearing.checked = false;
-
-							checkboxCurrentInsulatingBearing.classList.replace('checkbox-currentInsulatingBearing-checked', 'checkbox-currentInsulatingBearing-unchecked');
-
-							Array.from(selectorImportBearings.children).forEach(function (child) {
-								child.disabled = false;
-							});
-						} else if (Array.from(checkboxCurrentInsulatingBearing.classList).some(function (className) {
-							return className.includes('-unchecked');
-						}) && optionsSelector.frameSize >= 200) {
-							if (selectorImportBearings.value === 'Передний и задний шариковые подшипники (производства SKF/NSK/KOYO/FAG)') {
-								checkboxCurrentInsulatingBearing.checked = false;
-								selectorImportBearings.children[1].disabled = true;
-							} else {
-								checkboxCurrentInsulatingBearing.checked = true;
-								checkboxCurrentInsulatingBearing.classList.replace('checkbox-currentInsulatingBearing-unchecked', 'checkbox-currentInsulatingBearing-checked');
-								selectorImportBearings.children[1].disabled = false;
-								selectorImportBearings.children[2].disabled = true;
-							}
-						}
-
-						//вывод предупреждения при отсутствии выбора токоиз. подшипника для двигателей >= 200 габ.:
-						(0, _extra_options_list.showWarning)();
-
-						//вывод описания для токоиз. подшипника автоматически при выборе модели >= 200 габ.:
-						if (Array.from(checkboxCurrentInsulatingBearing.classList).some(function (className) {
-							return className.includes('-checked');
-						}) && optionsSelector.frameSize >= 200) {
-							setModelDescription('addData', 'checkbox-currentInsulatingBearing');
-						}
-						_context3.next = 72;
-						break;
-
-					case 70:
-						//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
-						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
-						_ui.mask.getMaskParams();
-
-					case 72:
-
-						if (typeof query === 'string' && query.length < 4 && !query.match(_global_vars.regex) || (typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query) && query.some(function (param) {
-							return param === '-';
-						})) {
-							Array.from(_global_dom.selectorModel.children).forEach(function (child, index) {
-								return index !== 0 && child.remove();
-							});
-						}
-
-					case 73:
-					case 'end':
-						return _context3.stop();
-				}
-			}
-		}, _callee3, this, [[1, 20], [28, 46]]);
-	}));
-
-	return function getModel(_x3, _x4) {
-		return _ref2.apply(this, arguments);
-	};
-}();
-
-//выбор чертежа в зависимости от ввода (селекторы / чекбоксы):
-
-
 //обратный вывод опций от инпута:
 var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 	var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(e) {
-		var _recurse, areaSelection_subchilds, elements, arr_valueToDecode;
-
+		var elements, arr_valueToDecode;
 		return regeneratorRuntime.wrap(function _callee4$(_context4) {
 			while (1) {
 				switch (_context4.prev = _context4.next) {
 					case 0:
 						_context4.prev = 0;
 
-						//console.log(elements);
-
-						_recurse = function _recurse(elem) {
-							if (elem.firstElementChild === null) {
-								elements.push(elem);
-
-								if (elem.nextElementSibling === null) {
-									return;
-								} else {
-									_recurse(elem.nextElementSibling);
-								}
-							} else {
-								_recurse(elem.firstElementChild);
-							}
-						};
-
 						//mask.removeMask();
-						areaSelection_subchilds = Array.from(_global_dom.areaSelection.children).slice(1).map(function (child) {
-							return child.firstElementChild.tagName === 'UL' ? Array.from(child.firstElementChild.children).reduce(function (acc, curr) {
-								return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
-							}, []).concat(Array.from(child.firstElementChild.nextElementSibling.children).reduce(function (acc, curr) {
-								return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
-							}, [])) : Array.from(child.children);
-						}).flat(1).filter(function (subchild) {
-							return subchild.tagName !== 'LABEL';
-						});
-
-						//	console.log(areaSelection_subchilds);
-
-						elements = [];
-
-						areaSelection_subchilds.forEach(function (sub) {
-							return _recurse(sub);
-						});arr_valueToDecode = _global_dom.input_reverseSelection.value.split('/')[1].split('-').slice(1).map(function (val) {
+						elements = getChildsRecursively(_global_dom.areaSelection.children);
+						arr_valueToDecode = _global_dom.input_reverseSelection.value.split('/')[1].split('-').slice(1).map(function (val) {
 							return (
 								//handling case for sensors: val.length > 1 means 2 digits, like Б12, Б24 etc:
 								val[0] === 'Б'.toUpperCase() && val.length > 1 ? val.slice(1).split('').reduce(function (acc, curr) {
@@ -5027,16 +4720,16 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 						});
 
 						e.target.disabled = true;
-						_context4.next = 10;
+						_context4.next = 7;
 						return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'resetOptionsList');
 
-					case 10:
+					case 7:
 						e.target.disabled = false;
-						_context4.next = 20;
+						_context4.next = 17;
 						break;
 
-					case 13:
-						_context4.prev = 13;
+					case 10:
+						_context4.prev = 10;
 						_context4.t0 = _context4['catch'](0);
 
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
@@ -5045,15 +4738,15 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 						alert('Введено что-то не то');
 						console.log(_context4.t0);
 
-					case 20:
+					case 17:
 					case 'end':
 						return _context4.stop();
 				}
 			}
-		}, _callee4, this, [[0, 13]]);
+		}, _callee4, this, [[0, 10]]);
 	}));
 
-	return function selectOptionsReversevely(_x6) {
+	return function selectOptionsReversevely(_x5) {
 		return _ref5.apply(this, arguments);
 	};
 }();
@@ -5083,32 +4776,316 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-//получение списка моделей и очистка UI:
-function searchModel(e) {
-	var filteredResults = [];
+//поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
+var models = exports.models = {
+	itemsList: [],
+	getModel: function () {
+		var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(query) {
 
-	if (e.target.id === 'input-model') {
-		getModel(e.target.value, filteredResults);
+			//filling models selector with options:
+			var fillModelsOptions = function () {
+				var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(targetObject) {
+					var option, sliced, frameSize;
+					return regeneratorRuntime.wrap(function _callee$(_context) {
+						while (1) {
+							switch (_context.prev = _context.next) {
+								case 0:
+									option = document.createElement('option');
+
+
+									option.value = option.innerText = _global_vars.motorStandartSetter.selected === '5AI' ? targetObject.model + ' ' + targetObject.attrs.find(function (item) {
+										return item.attribute_id == 33;
+									}).text + '/' + targetObject.attrs.find(function (item) {
+										return item.attribute_id == 36;
+									}).text : targetObject.model;
+
+									sliced = targetObject.model.slice(4).split('').map(function (w) {
+										return w !== ' ' && !isNaN(Number(w)) && Number(w);
+									});
+									frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
+
+									option.setAttribute('data-itemId', frameSize);
+									_global_dom.selectorModel.appendChild(option);
+
+								case 6:
+								case 'end':
+									return _context.stop();
+							}
+						}
+					}, _callee, this);
+				}));
+
+				return function fillModelsOptions(_x2) {
+					return _ref2.apply(this, arguments);
+				};
+			}();
+
+			//if received json is array:
+
+
+			var formData, url, req, res, _formData, postData, _url, _req, _res, targetObj, checkboxCurrentInsulatingBearing, selectorImportBearings;
+
+			return regeneratorRuntime.wrap(function _callee2$(_context2) {
+				while (1) {
+					switch (_context2.prev = _context2.next) {
+						case 0:
+							if (!(typeof query === 'string')) {
+								_context2.next = 28;
+								break;
+							}
+
+							_context2.prev = 1;
+							formData = new FormData();
+
+							formData.append('type', _global_vars.motorStandartSetter.selected);
+							formData.append('keyword', query.toUpperCase());
+							url = '/index.php?route=tool/adchr/test/adchr/get_data_by_input';
+
+
+							_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
+							_ui.mask.getMaskParams();
+
+							_context2.next = 10;
+							return fetch(url, {
+								method: 'POST',
+								body: formData,
+								headers: {
+									Accept: 'application/json'
+								}
+							});
+
+						case 10:
+							req = _context2.sent;
+							_context2.next = 13;
+							return req.json();
+
+						case 13:
+							res = _context2.sent;
+
+							console.log(res);
+
+							this.itemsList = res;
+							_ui.mask.removeMask();
+
+							if (this.itemsList.length === 0) {
+								_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+								_ui.mask.getMaskParams();
+								alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+							}
+							_context2.next = 26;
+							break;
+
+						case 20:
+							_context2.prev = 20;
+							_context2.t0 = _context2['catch'](1);
+
+							console.log(_context2.t0);
+							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+							_ui.mask.getMaskParams();
+							this.itemsList = [];
+
+						case 26:
+							_context2.next = 53;
+							break;
+
+						case 28:
+							if (!((typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query))) {
+								_context2.next = 53;
+								break;
+							}
+
+							_context2.prev = 29;
+							_formData = new FormData();
+							postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: _global_vars.motorStandartSetter.selected }];
+
+							postData.forEach(function (data) {
+								return _formData.append(Object.keys(data)[0], Object.values(data)[0]);
+							});
+
+							_url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
+
+
+							_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
+							_ui.mask.getMaskParams();
+
+							_context2.next = 38;
+							return fetch(_url, {
+								method: 'POST',
+								body: _formData,
+								headers: {
+									Accept: 'application/json'
+								}
+							});
+
+						case 38:
+							_req = _context2.sent;
+							_context2.next = 41;
+							return _req.json();
+
+						case 41:
+							_res = _context2.sent;
+
+							console.log(_res);
+							this.itemsList = _res;
+							_ui.mask.removeMask();
+							_context2.next = 53;
+							break;
+
+						case 47:
+							_context2.prev = 47;
+							_context2.t1 = _context2['catch'](29);
+
+							console.log(_context2.t1);
+							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+							_ui.mask.getMaskParams();
+							this.itemsList = [];
+
+						case 53:
+
+							Array.from(_global_dom.selectorModel.children).forEach(function (child, index) {
+								return index !== 0 && child.remove();
+							});if (_typeof(this.itemsList) === 'object' && Array.isArray(this.itemsList)) {
+								this.itemsList.forEach(function (obj) {
+									fillModelsOptions(obj);
+								});
+							}
+							//else if received json is a single object:
+							else {
+									targetObj = this.itemsList;
+
+									fillModelsOptions(targetObj);
+								}
+
+							//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
+
+							if (!(_global_dom.selectorModel.children[1] !== undefined && _typeof(_global_dom.selectorModel.children[1]) !== undefined)) {
+								_context2.next = 72;
+								break;
+							}
+
+							_ui.mask.removeMask();
+
+							_global_dom.selectorModel.children[1].selected = true;
+							_context2.next = 60;
+							return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'populateOptionsList');
+
+						case 60:
+
+							//перезаливка наименования:
+							setModelName();
+
+							//выставление IP55 по умолчанию при поиске новой модели:
+							document.getElementById('selector-ip').children[0].selected = true;
+
+							//перезаливка описательной части для IP при поиске новой модели (всегда по умолчанию выставляется IP55 из опции 1):
+							setModelDescription('addData', Array.from(document.getElementById('selector-ip').children).find(function (option) {
+								return option.selected;
+							}).getAttribute('data-itemid'));
+
+							//выставление УХЛ:
+							setModelDescription('addData', Array.from(document.getElementById('selector-climateCat').children).find(function (option) {
+								return option.selected;
+							}).getAttribute('data-itemid'));
+
+							//перезаливка описательной части для импортных подшипников:
+							setModelDescription('addData', Array.from(document.getElementById('selector-importBearings').children).find(function (option) {
+								return option.selected;
+							}).getAttribute('data-itemid'));
+
+							//перезаливка и перевыставление атр. checked и disabled для токоизю подшипника и импортных подшипников:
+							checkboxCurrentInsulatingBearing = document.getElementById('checkbox-currentInsulatingBearing');
+							selectorImportBearings = document.getElementById('selector-importBearings');
+
+
+							if (Array.from(checkboxCurrentInsulatingBearing.classList).some(function (className) {
+								return className.includes('-checked');
+							}) && optionsSelector.frameSize < 200) {
+								checkboxCurrentInsulatingBearing.checked = false;
+
+								checkboxCurrentInsulatingBearing.classList.replace('checkbox-currentInsulatingBearing-checked', 'checkbox-currentInsulatingBearing-unchecked');
+
+								Array.from(selectorImportBearings.children).forEach(function (child) {
+									child.disabled = false;
+								});
+							} else if (Array.from(checkboxCurrentInsulatingBearing.classList).some(function (className) {
+								return className.includes('-unchecked');
+							}) && optionsSelector.frameSize >= 200) {
+								if (selectorImportBearings.value === 'Передний и задний шариковые подшипники (производства SKF/NSK/KOYO/FAG)') {
+									checkboxCurrentInsulatingBearing.checked = false;
+									selectorImportBearings.children[1].disabled = true;
+								} else {
+									checkboxCurrentInsulatingBearing.checked = true;
+									checkboxCurrentInsulatingBearing.classList.replace('checkbox-currentInsulatingBearing-unchecked', 'checkbox-currentInsulatingBearing-checked');
+									selectorImportBearings.children[1].disabled = false;
+									selectorImportBearings.children[2].disabled = true;
+								}
+							}
+
+							//вывод предупреждения при отсутствии выбора токоиз. подшипника для двигателей >= 200 габ.:
+							(0, _extra_options_list.showWarning)();
+
+							//вывод описания для токоиз. подшипника автоматически при выборе модели >= 200 габ.:
+							if (Array.from(checkboxCurrentInsulatingBearing.classList).some(function (className) {
+								return className.includes('-checked');
+							}) && optionsSelector.frameSize >= 200) {
+								setModelDescription('addData', 'checkbox-currentInsulatingBearing');
+							}
+							_context2.next = 75;
+							break;
+
+						case 72:
+							//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
+							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
+							_ui.mask.getMaskParams();
+							this.itemsList = [];
+
+						case 75:
+
+							if (typeof query === 'string' && query.length < 4 && !query.match(_global_vars.regex) || (typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query) && query.some(function (param) {
+								return param === '-';
+							})) {
+								Array.from(_global_dom.selectorModel.children).forEach(function (child, index) {
+									return index !== 0 && child.remove();
+								});
+							}
+
+						case 76:
+						case 'end':
+							return _context2.stop();
+					}
+				}
+			}, _callee2, this, [[1, 20], [29, 47]]);
+		}));
+
+		function getModel(_x) {
+			return _ref.apply(this, arguments);
+		}
+
+		return getModel;
+	}()
+};
+
+//вывод списка моделей и очистка UI:
+function searchModel(e) {
+	if (e.target.id === 'input-model' && e.target.value.length > 4 && e.target.value.match(_global_vars.regex) !== null) {
+		models.getModel(e.target.value);
 		_global_dom.selectorBrakes.value = _global_dom.selectorPower.value = _global_dom.selectorRpm.value = _global_dom.selectorPaws.value = _global_dom.selectorVentSystem.value = '-';
 		_global_dom.checkboxEncoder.checked = _global_dom.checkboxConicShaft.checked = false;
 		if (document.getElementById('checkbox-vibrosensors') !== null && document.getElementById('checkbox-antiCondenseHeater') !== null) {
 			document.getElementById('checkbox-vibrosensors').checked = document.getElementById('checkbox-antiCondenseHeater').checked = false;
 		}
-
-		//hiding/showing motor type select btns:
-		_global_dom.btn.selectorMotor_5ai.parentElement.style.visibility = e.target.value !== '' ? 'hidden' : 'visible';
-	} else {
-		getModel([_global_dom.selectorPower.value, _global_dom.selectorRpm.value], filteredResults);
+	} else if (e.target.id !== 'input-model') {
+		models.getModel([_global_dom.selectorPower.value, _global_dom.selectorRpm.value]);
 		_global_dom.selectorBrakes.value = _global_dom.selectorPaws.value = _global_dom.selectorVentSystem.value = '-';
 		_global_dom.checkboxEncoder.checked = _global_dom.checkboxConicShaft.checked = false;
 
 		if (document.getElementById('checkbox-vibrosensors') !== null && document.getElementById('checkbox-antiCondenseHeater') !== null) {
 			document.getElementById('checkbox-vibrosensors').checked = document.getElementById('checkbox-antiCondenseHeater').checked = false;
 		}
-
-		//hiding/showing motor type select btns:
-		_global_dom.btn.selectorMotor_5ai.parentElement.style.visibility = _global_dom.selectorPower.value !== '-' || _global_dom.selectorRpm.value !== '-' ? 'hidden' : 'visible';
 	}
+
+	//hiding/showing motor type select btns:
+	_global_dom.btn.selectorMotor_5ai.parentElement.style.visibility = e.target.id === 'input-model' && e.target.value !== '' ? 'hidden' : 'visible';
 
 	//cleaning up selector options list while typing or re-selecting:
 	Array.from(_global_dom.selectorBrakes.children).forEach(function (child, index) {
@@ -5224,7 +5201,10 @@ var optionsSelector = exports.optionsSelector = {
 			});
 		}
 	}
-}function setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType) {
+}
+
+//выбор чертежа в зависимости от ввода (селекторы / чекбоксы):
+function setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType) {
 	var pathStart = brakeType !== '-' || encoderIsChecked || ventSystemOptionValue !== '-' || conicShaftIsChecked ? 'https://www.elcomspb.ru/image/catalog/products/to/engine/adchr/' : 'https://www.elcomspb.ru/image/catalog/products/to/engine/'.concat(_global_vars.motorStandartSetter.selected === 'ESQ' ? 'din/' : '5ai/new/');
 
 	var path_vent_part = ventSystemOptionValue.includes('наездник') && frameSize >= 112 && frameSize <= 132 ? 'naezd/do_132/' : ventSystemOptionValue.includes('наездник') && frameSize > 132 && frameSize <= 250 ? 'naezd/160_250/' : ventSystemOptionValue.includes('наездник') && frameSize > 250 ? 'naezd/ot_280/' : '';
@@ -5632,6 +5612,68 @@ function setModelName() {
 		}
 	}, 10);
 }
+
+function getChildsRecursively(rootElement) {
+	var subchilds = Array.from(rootElement).slice(1).map(function (child) {
+		return child.firstElementChild.tagName === 'UL' ? Array.from(child.firstElementChild.children).reduce(function (acc, curr) {
+			return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
+		}, []).concat(Array.from(child.firstElementChild.nextElementSibling.children).reduce(function (acc, curr) {
+			return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
+		}, [])) : Array.from(child.children);
+	}).flat(1).filter(function (subchild) {
+		return subchild.tagName !== 'LABEL';
+	});
+
+	//	console.log(subchilds);
+
+	var elements = [];
+	subchilds.forEach(function (sub) {
+		return recurse(sub);
+	});
+
+	function recurse(elem) {
+		if (elem.firstElementChild === null) {
+			elements.push(elem);
+
+			if (elem.nextElementSibling === null) {
+				return;
+			} else {
+				recurse(elem.nextElementSibling);
+			}
+		} else {
+			recurse(elem.firstElementChild);
+		}
+	}
+
+	return elements;
+}
+
+//расчет стоимости:
+var motorCost = {
+	price: null,
+
+	calculateCost: function calculateCost(modelName, pawtype, pricelist) {
+		var modelItem = Array.isArray(models.itemsList) ? models.itemsList.filter(function (model) {
+			return model.model === modelName;
+		})[0] : models.itemsList;
+
+		var currentType = modelItem.rel_offers.filter(function (offer) {
+			return offer.model.slice(offer.model.lastIndexOf(' ')).trim() === pawtype;
+		})[0];
+
+		//console.log(currentType);
+		this.price = _global_dom.selectorBrakes.value === '-' ? currentType.price : currentType.brake.price;
+
+		//console.log(this.price);
+		console.log(pricelist);
+
+		// const elements = getChildsRecursively(areaSelection.children);
+
+		// elements.forEach((element) => {
+		// 	console.log(element);
+		// });
+	}
+};
 
 /***/ }),
 /* 134 */
@@ -11372,7 +11414,12 @@ function globeEvHandler() {
 
 	//searching for a specific model agains choice of rpm or voltage:
 	_global_dom.selectorPower.onchange = _global_dom.selectorRpm.onchange = function (e) {
-		return e.target.value !== '-' && (0, _selectFunctions.searchModel)(e);
+		if (_global_dom.input_reverseSelection.value.length !== 0) {
+			_global_dom.input_reverseSelection.value = '';
+		}
+
+		e.target.value !== '-' && (0, _selectFunctions.searchModel)(e);
+		_global_dom.btn.selectorMotor_5ai.parentElement.style.visibility = e.target.value !== '-' ? 'hidden' : 'visible';
 	};
 
 	//selecting a motor model:
@@ -11633,7 +11680,7 @@ function globeEvHandler() {
 							}
 
 							_context.next = 11;
-							return (0, _selectFunctions.getModel)(modelName, []);
+							return _selectFunctions.models.getModel(modelName);
 
 						case 11:
 

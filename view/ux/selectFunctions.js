@@ -24,12 +24,215 @@ import { imgSrcData, setImgSrcData } from '../motordata/imgSrcData';
 import { fillExtraOptions, showWarning } from '../motordata/extra_options_list';
 import { setTransforms, mask } from '../ui/ui';
 
-//получение списка моделей и очистка UI:
-export function searchModel(e) {
-	const filteredResults = [];
+//поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
+export const models = {
+	itemsList: [],
+	getModel: async function (query) {
+		if (typeof query === 'string') {
+			try {
+				const formData = new FormData();
+				formData.append('type', motorStandartSetter.selected);
+				formData.append('keyword', query.toUpperCase());
+				const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_input';
 
-	if (e.target.id === 'input-model') {
-		getModel(e.target.value, filteredResults);
+				mask.createMask('/image/catalog/adchr/spinner.svg');
+				mask.getMaskParams();
+
+				const req = await fetch(url, {
+					method: 'POST',
+					body: formData,
+					headers: {
+						Accept: 'application/json',
+					},
+				});
+
+				const res = await req.json();
+				console.log(res);
+
+				this.itemsList = res;
+				mask.removeMask();
+
+				if (this.itemsList.length === 0) {
+					mask.createMask('/image/catalog/adchr/ban.svg');
+					mask.getMaskParams();
+					alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+				}
+			} catch (error) {
+				console.log(error);
+				mask.createMask('/image/catalog/adchr/ban.svg');
+				mask.getMaskParams();
+				this.itemsList = [];
+			}
+		} else if (typeof query === 'object' && Array.isArray(query)) {
+			try {
+				const formData = new FormData();
+
+				const postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: motorStandartSetter.selected }];
+				postData.forEach((data) => formData.append(Object.keys(data)[0], Object.values(data)[0]));
+
+				const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
+
+				mask.createMask('/image/catalog/adchr/spinner.svg');
+				mask.getMaskParams();
+
+				const req = await fetch(url, {
+					method: 'POST',
+					body: formData,
+					headers: {
+						Accept: 'application/json',
+					},
+				});
+
+				const res = await req.json();
+				console.log(res);
+				this.itemsList = res;
+				mask.removeMask();
+			} catch (error) {
+				console.log(error);
+				mask.createMask('/image/catalog/adchr/ban.svg');
+				mask.getMaskParams();
+				this.itemsList = [];
+			}
+		}
+
+		Array.from(selectorModel.children).forEach((child, index) => index !== 0 && child.remove());
+
+		//filling models selector with options:
+		async function fillModelsOptions(targetObject) {
+			const option = document.createElement('option');
+
+			option.value = option.innerText =
+				motorStandartSetter.selected === '5AI'
+					? `${targetObject.model} ${targetObject.attrs.find((item) => item.attribute_id == 33).text}/${
+							targetObject.attrs.find((item) => item.attribute_id == 36).text
+					  }`
+					: targetObject.model;
+
+			const sliced = targetObject.model
+				.slice(4)
+				.split('')
+				.map((w) => w !== ' ' && !isNaN(Number(w)) && Number(w));
+
+			const frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
+			option.setAttribute('data-itemId', frameSize);
+			selectorModel.appendChild(option);
+		}
+
+		//if received json is array:
+		if (typeof this.itemsList === 'object' && Array.isArray(this.itemsList)) {
+			this.itemsList.forEach((obj) => {
+				fillModelsOptions(obj);
+			});
+		}
+		//else if received json is a single object:
+		else {
+			const targetObj = this.itemsList;
+			fillModelsOptions(targetObj);
+		}
+
+		//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
+		if (selectorModel.children[1] !== undefined && typeof selectorModel.children[1] !== undefined) {
+			mask.removeMask();
+
+			selectorModel.children[1].selected = true;
+			await getOptions([selectorBrakes, selectorPaws, selectorVentSystem], 'populateOptionsList');
+
+			//перезаливка наименования:
+			setModelName();
+
+			//выставление IP55 по умолчанию при поиске новой модели:
+			document.getElementById('selector-ip').children[0].selected = true;
+
+			//перезаливка описательной части для IP при поиске новой модели (всегда по умолчанию выставляется IP55 из опции 1):
+			setModelDescription(
+				'addData',
+				Array.from(document.getElementById('selector-ip').children)
+					.find((option) => option.selected)
+					.getAttribute('data-itemid')
+			);
+
+			//выставление УХЛ:
+			setModelDescription(
+				'addData',
+				Array.from(document.getElementById('selector-climateCat').children)
+					.find((option) => option.selected)
+					.getAttribute('data-itemid')
+			);
+
+			//перезаливка описательной части для импортных подшипников:
+			setModelDescription(
+				'addData',
+				Array.from(document.getElementById('selector-importBearings').children)
+					.find((option) => option.selected)
+					.getAttribute('data-itemid')
+			);
+
+			//перезаливка и перевыставление атр. checked и disabled для токоизю подшипника и импортных подшипников:
+			const checkboxCurrentInsulatingBearing = document.getElementById('checkbox-currentInsulatingBearing');
+			const selectorImportBearings = document.getElementById('selector-importBearings');
+
+			if (
+				Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-checked')) &&
+				optionsSelector.frameSize < 200
+			) {
+				checkboxCurrentInsulatingBearing.checked = false;
+
+				checkboxCurrentInsulatingBearing.classList.replace(
+					'checkbox-currentInsulatingBearing-checked',
+					'checkbox-currentInsulatingBearing-unchecked'
+				);
+
+				Array.from(selectorImportBearings.children).forEach((child) => {
+					child.disabled = false;
+				});
+			} else if (
+				Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-unchecked')) &&
+				optionsSelector.frameSize >= 200
+			) {
+				if (selectorImportBearings.value === 'Передний и задний шариковые подшипники (производства SKF/NSK/KOYO/FAG)') {
+					checkboxCurrentInsulatingBearing.checked = false;
+					selectorImportBearings.children[1].disabled = true;
+				} else {
+					checkboxCurrentInsulatingBearing.checked = true;
+					checkboxCurrentInsulatingBearing.classList.replace(
+						'checkbox-currentInsulatingBearing-unchecked',
+						'checkbox-currentInsulatingBearing-checked'
+					);
+					selectorImportBearings.children[1].disabled = false;
+					selectorImportBearings.children[2].disabled = true;
+				}
+			}
+
+			//вывод предупреждения при отсутствии выбора токоиз. подшипника для двигателей >= 200 габ.:
+			showWarning();
+
+			//вывод описания для токоиз. подшипника автоматически при выборе модели >= 200 габ.:
+			if (
+				Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-checked')) &&
+				optionsSelector.frameSize >= 200
+			) {
+				setModelDescription('addData', 'checkbox-currentInsulatingBearing');
+			}
+		} else {
+			//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
+			mask.createMask('/image/catalog/adchr/ban.svg');
+			mask.getMaskParams();
+			this.itemsList = [];
+		}
+
+		if (
+			(typeof query === 'string' && query.length < 4 && !query.match(regex)) ||
+			(typeof query === 'object' && Array.isArray(query) && query.some((param) => param === '-'))
+		) {
+			Array.from(selectorModel.children).forEach((child, index) => index !== 0 && child.remove());
+		}
+	},
+};
+
+//вывод списка моделей и очистка UI:
+export function searchModel(e) {
+	if (e.target.id === 'input-model' && e.target.value.length > 4 && e.target.value.match(regex) !== null) {
+		models.getModel(e.target.value);
 		selectorBrakes.value = selectorPower.value = selectorRpm.value = selectorPaws.value = selectorVentSystem.value = '-';
 		checkboxEncoder.checked = checkboxConicShaft.checked = false;
 		if (
@@ -40,11 +243,8 @@ export function searchModel(e) {
 				'checkbox-antiCondenseHeater'
 			).checked = false;
 		}
-
-		//hiding/showing motor type select btns:
-		btn.selectorMotor_5ai.parentElement.style.visibility = e.target.value !== '' ? 'hidden' : 'visible';
-	} else {
-		getModel([selectorPower.value, selectorRpm.value], filteredResults);
+	} else if (e.target.id !== 'input-model') {
+		models.getModel([selectorPower.value, selectorRpm.value]);
 		selectorBrakes.value = selectorPaws.value = selectorVentSystem.value = '-';
 		checkboxEncoder.checked = checkboxConicShaft.checked = false;
 
@@ -56,11 +256,10 @@ export function searchModel(e) {
 				'checkbox-antiCondenseHeater'
 			).checked = false;
 		}
-
-		//hiding/showing motor type select btns:
-		btn.selectorMotor_5ai.parentElement.style.visibility =
-			selectorPower.value !== '-' || selectorRpm.value !== '-' ? 'hidden' : 'visible';
 	}
+
+	//hiding/showing motor type select btns:
+	btn.selectorMotor_5ai.parentElement.style.visibility = e.target.id === 'input-model' && e.target.value !== '' ? 'hidden' : 'visible';
 
 	//cleaning up selector options list while typing or re-selecting:
 	Array.from(selectorBrakes.children).forEach((child, index) => index !== 0 && child.remove());
@@ -170,7 +369,6 @@ export const optionsSelector = {
 export async function getOptions(selectorsId, operationType) {
 	if (selectorModel.value !== '-') {
 		optionsSelector.setOptionsList();
-
 		const { electroMagneticBreak, paws, ventSystem } = optionsConfig;
 
 		if (Array.isArray(selectorsId)) {
@@ -195,18 +393,23 @@ export async function getOptions(selectorsId, operationType) {
 				.find((option) => option.selected === true)
 				.getAttribute('data-itemid');
 
-			const input = input_reverseSelection.value.slice(
-				0,
-				input_reverseSelection.value.indexOf('-', input_reverseSelection.value.indexOf('/'))
-			);
+			const input =
+				input_reverseSelection.value.length > 0
+					? input_reverseSelection.value.slice(
+							0,
+							input_reverseSelection.value.indexOf('-', input_reverseSelection.value.indexOf('/'))
+					  )
+					: null;
 
 			const modelName =
-				motorStandartSetter.selected === '5AI'
+				motorStandartSetter.selected === '5AI' && input !== null
 					? input
 							.split(' ')
 							.filter((item) => item.indexOf('/') === -1)
 							.join(' ')
-					: input;
+					: motorStandartSetter.selected === 'ESQ' && input !== null
+					? input
+					: null;
 
 			const postData = [
 				{ type: motorStandartSetter.selected },
@@ -253,7 +456,13 @@ export async function getOptions(selectorsId, operationType) {
 
 			const res = await req.json();
 
-			setChartConnectionDims(res);
+			motorCost.calculateCost(
+				postData.filter((data) => Object.keys(data)[0] === 'model')[0].model,
+				postData.filter((data) => Object.keys(data)[0] === 'pawtype')[0].pawtype,
+				res.find((r) => Object.keys(r)[0] === 'pricelist').pricelist
+			);
+
+			setChartConnectionDims(res.find((r) => Object.keys(r)[0] === 'dims').dims);
 			fillUpgradesChart();
 			setModelName();
 			mask.removeMask();
@@ -304,205 +513,6 @@ export function populateOptionsList(selectorsId, srcData, operationType) {
 					!srcData[index].selectable;
 			});
 		}
-	}
-}
-
-//поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
-export async function getModel(query, targetArr) {
-	if (query.length > 4 && query.match(regex) !== null && typeof query === 'string') {
-		try {
-			const formData = new FormData();
-			formData.append('type', motorStandartSetter.selected);
-			formData.append('keyword', query.toUpperCase());
-			const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_input';
-
-			mask.createMask('/image/catalog/adchr/spinner.svg');
-			mask.getMaskParams();
-
-			const req = await fetch(url, {
-				method: 'POST',
-				body: formData,
-				headers: {
-					Accept: 'application/json',
-				},
-			});
-
-			const res = await req.json();
-			console.log(res);
-
-			targetArr = res;
-			mask.removeMask();
-
-			if (targetArr.length === 0) {
-				mask.createMask('/image/catalog/adchr/ban.svg');
-				mask.getMaskParams();
-				alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
-			}
-		} catch (error) {
-			console.log(error);
-			mask.createMask('/image/catalog/adchr/ban.svg');
-			mask.getMaskParams();
-		}
-	} else if (typeof query === 'object' && Array.isArray(query)) {
-		try {
-			const formData = new FormData();
-
-			const postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: motorStandartSetter.selected }];
-			postData.forEach((data) => formData.append(Object.keys(data)[0], Object.values(data)[0]));
-
-			const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
-
-			mask.createMask('/image/catalog/adchr/spinner.svg');
-			mask.getMaskParams();
-
-			const req = await fetch(url, {
-				method: 'POST',
-				body: formData,
-				headers: {
-					Accept: 'application/json',
-				},
-			});
-
-			const res = await req.json();
-			console.log(res);
-			targetArr = res;
-			mask.removeMask();
-		} catch (error) {
-			console.log(error);
-			mask.createMask('/image/catalog/adchr/ban.svg');
-			mask.getMaskParams();
-		}
-	}
-
-	Array.from(selectorModel.children).forEach((child, index) => index !== 0 && child.remove());
-
-	//filling models selector with options:
-	async function fillModelsOptions(targetObject) {
-		const option = document.createElement('option');
-
-		option.value = option.innerText =
-			motorStandartSetter.selected === '5AI'
-				? `${targetObject.model} ${targetObject.attrs.find((item) => item.attribute_id == 33).text}/${
-						targetObject.attrs.find((item) => item.attribute_id == 36).text
-				  }`
-				: targetObject.model;
-
-		const sliced = targetObject.model
-			.slice(4)
-			.split('')
-			.map((w) => w !== ' ' && !isNaN(Number(w)) && Number(w));
-
-		const frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
-		option.setAttribute('data-itemId', frameSize);
-		selectorModel.appendChild(option);
-	}
-
-	//if received json is array:
-	if (typeof targetArr === 'object' && Array.isArray(targetArr)) {
-		targetArr.forEach((obj) => {
-			fillModelsOptions(obj);
-		});
-	}
-	//else if received json is a single object:
-	else {
-		const targetObj = targetArr;
-		fillModelsOptions(targetObj);
-	}
-
-	//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
-	if (selectorModel.children[1] !== undefined && typeof selectorModel.children[1] !== undefined) {
-		mask.removeMask();
-
-		selectorModel.children[1].selected = true;
-		await getOptions([selectorBrakes, selectorPaws, selectorVentSystem], 'populateOptionsList');
-
-		//перезаливка наименования:
-		setModelName();
-
-		//выставление IP55 по умолчанию при поиске новой модели:
-		document.getElementById('selector-ip').children[0].selected = true;
-
-		//перезаливка описательной части для IP при поиске новой модели (всегда по умолчанию выставляется IP55 из опции 1):
-		setModelDescription(
-			'addData',
-			Array.from(document.getElementById('selector-ip').children)
-				.find((option) => option.selected)
-				.getAttribute('data-itemid')
-		);
-
-		//выставление УХЛ:
-		setModelDescription(
-			'addData',
-			Array.from(document.getElementById('selector-climateCat').children)
-				.find((option) => option.selected)
-				.getAttribute('data-itemid')
-		);
-
-		//перезаливка описательной части для импортных подшипников:
-		setModelDescription(
-			'addData',
-			Array.from(document.getElementById('selector-importBearings').children)
-				.find((option) => option.selected)
-				.getAttribute('data-itemid')
-		);
-
-		//перезаливка и перевыставление атр. checked и disabled для токоизю подшипника и импортных подшипников:
-		const checkboxCurrentInsulatingBearing = document.getElementById('checkbox-currentInsulatingBearing');
-		const selectorImportBearings = document.getElementById('selector-importBearings');
-
-		if (
-			Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-checked')) &&
-			optionsSelector.frameSize < 200
-		) {
-			checkboxCurrentInsulatingBearing.checked = false;
-
-			checkboxCurrentInsulatingBearing.classList.replace(
-				'checkbox-currentInsulatingBearing-checked',
-				'checkbox-currentInsulatingBearing-unchecked'
-			);
-
-			Array.from(selectorImportBearings.children).forEach((child) => {
-				child.disabled = false;
-			});
-		} else if (
-			Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-unchecked')) &&
-			optionsSelector.frameSize >= 200
-		) {
-			if (selectorImportBearings.value === 'Передний и задний шариковые подшипники (производства SKF/NSK/KOYO/FAG)') {
-				checkboxCurrentInsulatingBearing.checked = false;
-				selectorImportBearings.children[1].disabled = true;
-			} else {
-				checkboxCurrentInsulatingBearing.checked = true;
-				checkboxCurrentInsulatingBearing.classList.replace(
-					'checkbox-currentInsulatingBearing-unchecked',
-					'checkbox-currentInsulatingBearing-checked'
-				);
-				selectorImportBearings.children[1].disabled = false;
-				selectorImportBearings.children[2].disabled = true;
-			}
-		}
-
-		//вывод предупреждения при отсутствии выбора токоиз. подшипника для двигателей >= 200 габ.:
-		showWarning();
-
-		//вывод описания для токоиз. подшипника автоматически при выборе модели >= 200 габ.:
-		if (
-			Array.from(checkboxCurrentInsulatingBearing.classList).some((className) => className.includes('-checked')) &&
-			optionsSelector.frameSize >= 200
-		) {
-			setModelDescription('addData', 'checkbox-currentInsulatingBearing');
-		}
-	} else {
-		//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
-		mask.createMask('/image/catalog/adchr/ban.svg');
-		mask.getMaskParams();
-	}
-
-	if (
-		(typeof query === 'string' && query.length < 4 && !query.match(regex)) ||
-		(typeof query === 'object' && Array.isArray(query) && query.some((param) => param === '-'))
-	) {
-		Array.from(selectorModel.children).forEach((child, index) => index !== 0 && child.remove());
 	}
 }
 
@@ -984,43 +994,7 @@ export function setModelName() {
 export async function selectOptionsReversevely(e) {
 	try {
 		//mask.removeMask();
-		const areaSelection_subchilds = Array.from(areaSelection.children)
-			.slice(1)
-			.map((child) =>
-				child.firstElementChild.tagName === 'UL'
-					? Array.from(child.firstElementChild.children)
-							.reduce((acc, curr) => [...acc, curr.firstElementChild], [])
-							.concat(
-								Array.from(child.firstElementChild.nextElementSibling.children).reduce(
-									(acc, curr) => [...acc, curr.firstElementChild],
-									[]
-								)
-							)
-					: Array.from(child.children)
-			)
-			.flat(1)
-			.filter((subchild) => subchild.tagName !== 'LABEL');
-
-		//	console.log(areaSelection_subchilds);
-
-		const elements = [];
-		areaSelection_subchilds.forEach((sub) => recurse(sub));
-
-		//console.log(elements);
-
-		function recurse(elem) {
-			if (elem.firstElementChild === null) {
-				elements.push(elem);
-
-				if (elem.nextElementSibling === null) {
-					return;
-				} else {
-					recurse(elem.nextElementSibling);
-				}
-			} else {
-				recurse(elem.firstElementChild);
-			}
-		}
+		const elements = getChildsRecursively(areaSelection.children);
 
 		const arr_valueToDecode = input_reverseSelection.value
 			.split('/')[1]
@@ -1127,3 +1101,70 @@ export async function selectOptionsReversevely(e) {
 		console.log(err);
 	}
 }
+
+function getChildsRecursively(rootElement) {
+	const subchilds = Array.from(rootElement)
+		.slice(1)
+		.map((child) =>
+			child.firstElementChild.tagName === 'UL'
+				? Array.from(child.firstElementChild.children)
+						.reduce((acc, curr) => [...acc, curr.firstElementChild], [])
+						.concat(
+							Array.from(child.firstElementChild.nextElementSibling.children).reduce(
+								(acc, curr) => [...acc, curr.firstElementChild],
+								[]
+							)
+						)
+				: Array.from(child.children)
+		)
+		.flat(1)
+		.filter((subchild) => subchild.tagName !== 'LABEL');
+
+	//	console.log(subchilds);
+
+	const elements = [];
+	subchilds.forEach((sub) => recurse(sub));
+
+	function recurse(elem) {
+		if (elem.firstElementChild === null) {
+			elements.push(elem);
+
+			if (elem.nextElementSibling === null) {
+				return;
+			} else {
+				recurse(elem.nextElementSibling);
+			}
+		} else {
+			recurse(elem.firstElementChild);
+		}
+	}
+
+	return elements;
+}
+
+//расчет стоимости:
+const motorCost = {
+	price: null,
+
+	calculateCost: function (modelName, pawtype, pricelist) {
+		const modelItem = Array.isArray(models.itemsList)
+			? models.itemsList.filter((model) => model.model === modelName)[0]
+			: models.itemsList;
+
+		const currentType = modelItem.rel_offers.filter(
+			(offer) => offer.model.slice(offer.model.lastIndexOf(' ')).trim() === pawtype
+		)[0];
+
+		//console.log(currentType);
+		this.price = selectorBrakes.value === '-' ? currentType.price : currentType.brake.price;
+
+		//console.log(this.price);
+		console.log(pricelist);
+
+		// const elements = getChildsRecursively(areaSelection.children);
+
+		// elements.forEach((element) => {
+		// 	console.log(element);
+		// });
+	},
+};

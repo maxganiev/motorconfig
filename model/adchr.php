@@ -6,6 +6,7 @@ use Eloquent\AttributeProduct;
 use Eloquent\AttributeTo;
 use Eloquent\AttributeDescription;
 use Eloquent\OptionsDimensionsAdchr;
+use Eloquent\OptionsPricelistAdchr;
 
 class ModelToolAdchrTestAdchr extends Model
 {
@@ -173,7 +174,6 @@ class ModelToolAdchrTestAdchr extends Model
 
 		//getting attributes by model input:
 		if ($power === '-' || $rpm === '-') {
-
 			//print_r($attrIds);
 			$product = $this->get_data_by_input($keyword, $type);
 
@@ -183,14 +183,11 @@ class ModelToolAdchrTestAdchr extends Model
 			})->values()->pluck('relOffers')->flatten(1)->filter(function ($item) use ($pawtype) {
 				//rel_offers[i]->model example: 5АИ 200 М 1001 - last 4 digits are being sliced out and kept with substr(strrpos - last index of ' ')
 				$pawId = substr($item->model, strrpos($item->model, ' '));
-
 				//non strict comparison as pawtype is string and pawId is number:
 				if (trim($pawId) == $pawtype) {
 					return $item->to_id;
 				}
 			})->pluck('to_id')[0];
-
-
 
 			$attr_keys = AttributeDescription::whereIn('attribute_id', $attrIds)->select('name')->get()->pluck('name')->toArray();
 			$attr_values = AttributeTo::where('to_id', $to_product_id)->whereIn('attribute_id', $attrIds)->select('text')->get()->pluck('text')->toArray();
@@ -214,56 +211,55 @@ class ModelToolAdchrTestAdchr extends Model
 					$combo_assoc['h31'] = $h31;
 				}
 			}
-
-
-			return $combo_assoc;
 		}
 		//getting attributes by power and rpm selection:
 		else {
-			$product = $this->get_data_by_power_and_rpm_selection($power, $rpm, $type);
+			$product_raw = $this->get_data_by_power_and_rpm_selection($power, $rpm, $type);
+			$index = array_keys(array_filter(array_column((array)$product_raw, 'model'), function ($item) use ($model) {
+				return $item == $model;
+			}))[0];
 
-			//checking if single or multiple products have been returned, if multiple resuls were returned:
-			if (gettype($product) !== 'object' || count($product) !== 1) {
-				return;
-			}
-			//if single - returning attrs:
-			else {
-				$to_product_id = array_column((array)$product, 'relOffers')[0]->values()->flatten(1)->filter(function ($item) use ($pawtype) {
+			$product = gettype($product_raw) !== 'object' || count($product_raw) !== 1 ? $product_raw[$index] : $product_raw;
 
-					//rel_offers[i]->model example: 5АИ 200 М 1001 - last 4 digits are being sliced out and kept with substr(strrpos - last index of ' ')
-					$pawId = substr($item->model, strrpos($item->model, ' '));
+			$to_product_id = array_column((array)$product, 'relOffers')[0]->values()->flatten(1)->filter(function ($item) use ($pawtype) {
 
-					//non strict comparison as pawtype is string and pawId is number:
-					if (trim($pawId) == $pawtype) {
-						return $item->to_id;
-					}
-				})->pluck('to_id')[0];
+				//rel_offers[i]->model example: 5АИ 200 М 1001 - last 4 digits are being sliced out and kept with substr(strrpos - last index of ' ')
+				$pawId = substr($item->model, strrpos($item->model, ' '));
 
-				$attr_keys = AttributeDescription::whereIn('attribute_id', $attrIds)->select('name')->get()->pluck('name')->toArray();
-				$attr_values = AttributeTo::where('to_id', $to_product_id)->whereIn('attribute_id', $attrIds)->select('text')->get()->pluck('text')->toArray();
-
-				$combo_assoc = array_combine($attr_keys, $attr_values);
-
-				if ($ifSomeOption) {
-					$frame = $this->checkFrameSize($frameSize, $type, $model);
-					$this->setL30($l30, $type, $frame, $with_brakes, $with_encoder, $with_vent);
-					$combo_assoc['l30'] = $l30;
-
-					$this->setD4($d4, $frame, $type);
-					$combo_assoc['d4'] = $d4;
-
-					$this->setL4($l4, $frame, $type);
-					$combo_assoc['l4'] = $l4;
-
-					if ($with_naezd_vent != 'false') {
-						$this->setH31($h31, $frame, $type);
-						$combo_assoc['h31'] = $h31;
-					}
+				//non strict comparison as pawtype is string and pawId is number:
+				if (trim($pawId) == $pawtype) {
+					return $item->to_id;
 				}
+			})->pluck('to_id')[0];
 
-				return $combo_assoc;
+			$attr_keys = AttributeDescription::whereIn('attribute_id', $attrIds)->select('name')->get()->pluck('name')->toArray();
+			$attr_values = AttributeTo::where('to_id', $to_product_id)->whereIn('attribute_id', $attrIds)->select('text')->get()->pluck('text')->toArray();
+
+			$combo_assoc = array_combine($attr_keys, $attr_values);
+
+			if ($ifSomeOption) {
+				$frame = $this->checkFrameSize($frameSize, $type, $model);
+				$this->setL30($l30, $type, $frame, $with_brakes, $with_encoder, $with_vent);
+				$combo_assoc['l30'] = $l30;
+
+				$this->setD4($d4, $frame, $type);
+				$combo_assoc['d4'] = $d4;
+
+				$this->setL4($l4, $frame, $type);
+				$combo_assoc['l4'] = $l4;
+
+				if ($with_naezd_vent != 'false') {
+					$this->setH31($h31, $frame, $type);
+					$combo_assoc['h31'] = $h31;
+				}
 			}
 		}
+
+		//getting pricelist for current framesize:
+		$pricelist = OptionsPricelistAdchr::where('framesize', 'like', $frameSize)->get()->toArray()[0];
+
+		//return result:
+		return array(['pricelist' => $pricelist], ['dims' => $combo_assoc]);
 	}
 
 	public function checkFrameSize($frameSize, $type, $model)
@@ -384,5 +380,10 @@ class ModelToolAdchrTestAdchr extends Model
 		$arg = OptionsDimensionsAdchr::where('framesize', 'like', $frame)->where('type', 'like', $type)->select('l4')->get()[0]['l4'];
 
 		return $arg;
+	}
+
+	public function getPrice()
+	{
+		//request by framesize and return complete range pricelist, make calculations on client
 	}
 }

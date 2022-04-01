@@ -20,7 +20,7 @@ import {
 	populateOptionsList,
 	setModelName,
 	selectOptionsReversevely,
-	getModel,
+	models,
 } from './selectFunctions';
 import { optionsConfig } from '../motordata/base_options_list';
 import { mask, ls_getBtnSelectorStyle, ls_getScrollPos } from '../ui/ui';
@@ -76,7 +76,14 @@ export function globeEvHandler() {
 	};
 
 	//searching for a specific model agains choice of rpm or voltage:
-	selectorPower.onchange = selectorRpm.onchange = (e) => e.target.value !== '-' && searchModel(e);
+	selectorPower.onchange = selectorRpm.onchange = (e) => {
+		if (input_reverseSelection.value.length !== 0) {
+			input_reverseSelection.value = '';
+		}
+
+		e.target.value !== '-' && searchModel(e);
+		btn.selectorMotor_5ai.parentElement.style.visibility = e.target.value !== '-' ? 'hidden' : 'visible';
+	};
 
 	//selecting a motor model:
 	selectorModel.addEventListener('change', () => {
@@ -334,7 +341,7 @@ export function globeEvHandler() {
 					: input;
 
 			if (input !== selectorModel.value) {
-				await getModel(modelName, []);
+				await models.getModel(modelName);
 			}
 
 			selectorModel.children.length > 1 && selectOptionsReversevely(e);
