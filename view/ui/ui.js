@@ -1,4 +1,4 @@
-import { areaFilter, btn, checkboxConicShaft } from '../ux/global_dom';
+import { areaFilter, btn, checkboxConicShaft, main } from '../ux/global_dom';
 
 export function setTransforms(htmlElem, transformVal, transformDir) {
 	htmlElem.style.transform = `translate${transformDir}(${transformVal})`;
@@ -54,4 +54,10 @@ export function ls_getScrollPos() {
 			window.scrollTo(0, localStorage.getItem('scrollPosY'));
 		}, 10);
 	}
+}
+
+export function recalculateHeight(parentElem) {
+	parentElem.style.height = Array.from(parentElem.children).reduce((acc, curr) => acc + curr.clientHeight, 0) * 1.15 + 'px';
+	main.style.height = '100%';
+	console.log(parentElem.clientHeight);
 }

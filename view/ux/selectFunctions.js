@@ -13,7 +13,6 @@ import {
 	areaSelection,
 	areaRender,
 	listItemUpgrades,
-	areaFilter,
 	h2ModelName,
 	btn,
 	input_reverseSelection,
@@ -22,7 +21,7 @@ import { optionsConfig } from '../motordata/base_options_list';
 import { regex, motorStandartSetter } from './global_vars';
 import { imgSrcData, setImgSrcData } from '../motordata/imgSrcData';
 import { fillExtraOptions, showWarning } from '../motordata/extra_options_list';
-import { setTransforms, mask } from '../ui/ui';
+import { setTransforms, mask, recalculateHeight } from '../ui/ui';
 
 //поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
 export const models = {
@@ -98,7 +97,7 @@ export const models = {
 		Array.from(selectorModel.children).forEach((child, index) => index !== 0 && child.remove());
 
 		//filling models selector with options:
-		async function fillModelsOptions(targetObject) {
+		function fillModelsOptions(targetObject) {
 			const option = document.createElement('option');
 
 			option.value = option.innerText =
@@ -346,8 +345,8 @@ export const optionsSelector = {
 
 		fillExtraOptions();
 
-		setTransforms(areaSelection.parentElement, '0px', 'Y');
-		setTransforms(areaRender, '0px', 'Y');
+		setTransforms(areaSelection.parentElement, '0px', 'X');
+		setTransforms(areaRender, '0px', 'X');
 
 		const _this = this;
 		this.currSelectionToGetImg = {
@@ -459,7 +458,25 @@ export async function getOptions(selectorsId, operationType) {
 			motorCost.calculateCost(
 				postData.filter((data) => Object.keys(data)[0] === 'model')[0].model,
 				postData.filter((data) => Object.keys(data)[0] === 'pawtype')[0].pawtype,
-				res.find((r) => Object.keys(r)[0] === 'pricelist').pricelist
+				res.find((r) => Object.keys(r)[0] === 'pricelist').pricelist,
+				[
+					...Array.from(document.getElementById('list-windingSensors').children).map(
+						(child) => child.firstElementChild
+					),
+					...Array.from(document.getElementById('list-bearingSensors').children).map(
+						(child) => child.firstElementChild
+					),
+					document.getElementById('checkbox-antiCondenseHeater'),
+					document.getElementById('selector-ip'),
+					checkboxEncoder,
+					document.getElementById('selector-importBearings'),
+					document.getElementById('selector-climateCat'),
+					selectorVentSystem,
+					document.getElementById('checkbox-vibrosensors'),
+					checkboxConicShaft,
+					document.getElementById('checkbox-currentInsulatingBearing'),
+					document.getElementById('checkbox-package'),
+				]
 			);
 
 			setChartConnectionDims(res.find((r) => Object.keys(r)[0] === 'dims').dims);
@@ -862,17 +879,11 @@ export function fillUpgradesChart() {
 			const list = document.createElement('ul');
 			list.classList.add('list', listId);
 
-			const power =
-				optionsConfigPropToFindValue !== null &&
-				optionsConfigPropToFindValue.find((opt) => opt.type === valueToSearch).power;
-
-			const upgradesList = upgradeObjData;
-
 			Array.from(list.children).forEach((child) => child.remove());
 
 			list.insertAdjacentHTML('afterbegin', `<li> <span style="font-weight: 900;"> ${colName} </span> </li>`);
 
-			upgradesList.forEach((upg) => {
+			upgradeObjData.forEach((upg) => {
 				const listItem = document.createElement('li');
 				listItem.innerHTML = `${upg.description}: ${upg.data}`;
 
@@ -881,7 +892,9 @@ export function fillUpgradesChart() {
 
 			if (optionsConfigPropToFindValue !== null) {
 				const listItem = document.createElement('li');
-				listItem.innerHTML = `${textForPower}: ${power}кВт`;
+				listItem.innerHTML = `${textForPower}: ${
+					optionsConfigPropToFindValue.find((opt) => opt.type === valueToSearch).power
+				}кВт`;
 
 				list.appendChild(listItem);
 			}
@@ -892,6 +905,8 @@ export function fillUpgradesChart() {
 				(ul) => Array.from(ul.classList).some((classname) => classname.includes(listId)) && ul.remove()
 			);
 		}
+
+		recalculateHeight(areaRender);
 	}
 }
 
@@ -993,8 +1008,41 @@ export function setModelName() {
 //обратный вывод опций от инпута:
 export async function selectOptionsReversevely(e) {
 	try {
-		//mask.removeMask();
-		const elements = getChildsRecursively(areaSelection.children);
+		const subchilds = Array.from(areaSelection.children)
+			.slice(1)
+			.map((child) =>
+				child.firstElementChild.tagName === 'UL'
+					? Array.from(child.firstElementChild.children)
+							.reduce((acc, curr) => [...acc, curr.firstElementChild], [])
+							.concat(
+								Array.from(child.firstElementChild.nextElementSibling.children).reduce(
+									(acc, curr) => [...acc, curr.firstElementChild],
+									[]
+								)
+							)
+					: Array.from(child.children)
+			)
+			.flat(1)
+			.filter((subchild) => subchild.tagName !== 'LABEL');
+
+		//	console.log(subchilds);
+
+		const elements = [];
+		subchilds.forEach((sub) => recurse(sub));
+
+		function recurse(elem) {
+			if (elem.firstElementChild === null) {
+				elements.push(elem);
+
+				if (elem.nextElementSibling === null) {
+					return;
+				} else {
+					recurse(elem.nextElementSibling);
+				}
+			} else {
+				recurse(elem.firstElementChild);
+			}
+		}
 
 		const arr_valueToDecode = input_reverseSelection.value
 			.split('/')[1]
@@ -1102,51 +1150,11 @@ export async function selectOptionsReversevely(e) {
 	}
 }
 
-function getChildsRecursively(rootElement) {
-	const subchilds = Array.from(rootElement)
-		.slice(1)
-		.map((child) =>
-			child.firstElementChild.tagName === 'UL'
-				? Array.from(child.firstElementChild.children)
-						.reduce((acc, curr) => [...acc, curr.firstElementChild], [])
-						.concat(
-							Array.from(child.firstElementChild.nextElementSibling.children).reduce(
-								(acc, curr) => [...acc, curr.firstElementChild],
-								[]
-							)
-						)
-				: Array.from(child.children)
-		)
-		.flat(1)
-		.filter((subchild) => subchild.tagName !== 'LABEL');
-
-	//	console.log(subchilds);
-
-	const elements = [];
-	subchilds.forEach((sub) => recurse(sub));
-
-	function recurse(elem) {
-		if (elem.firstElementChild === null) {
-			elements.push(elem);
-
-			if (elem.nextElementSibling === null) {
-				return;
-			} else {
-				recurse(elem.nextElementSibling);
-			}
-		} else {
-			recurse(elem.firstElementChild);
-		}
-	}
-
-	return elements;
-}
-
 //расчет стоимости:
 const motorCost = {
 	price: null,
 
-	calculateCost: function (modelName, pawtype, pricelist) {
+	calculateCost: function (modelName, pawtype, pricelist, elements) {
 		const modelItem = Array.isArray(models.itemsList)
 			? models.itemsList.filter((model) => model.model === modelName)[0]
 			: models.itemsList;
@@ -1155,16 +1163,97 @@ const motorCost = {
 			(offer) => offer.model.slice(offer.model.lastIndexOf(' ')).trim() === pawtype
 		)[0];
 
-		//console.log(currentType);
-		this.price = selectorBrakes.value === '-' ? currentType.price : currentType.brake.price;
+		console.log(currentType);
+		this.price = selectorBrakes.value === '-' ? Number(currentType.price) : Number(currentType.brake.price);
 
 		//console.log(this.price);
 		console.log(pricelist);
 
-		// const elements = getChildsRecursively(areaSelection.children);
+		//selection array:
+		const selectionArray = [];
 
-		// elements.forEach((element) => {
-		// 	console.log(element);
-		// });
+		elements.forEach((element) => {
+			switch (element.tagName) {
+				case 'BUTTON':
+					!element.classList.contains('btn-option-non-selected') &&
+						selectionArray.push(element.getAttribute('data-itemid').replace('Б', 'B'));
+
+					break;
+
+				case 'INPUT':
+					element.checked && selectionArray.push(element.getAttribute('data-itemid'));
+
+					break;
+
+				case 'SELECT':
+					if (element.value !== '-') {
+						//separate case for climate type selector
+						if (element.id === 'selector-climateCat') {
+							selectionArray.push(
+								element.value.includes('УХЛ')
+									? Array.from(element.children)
+											.find((option) => option.selected === true)
+											.getAttribute('data-itemid')
+											.replace('УХЛ', 'UHL')
+									: Array.from(element.children)
+											.find((option) => option.selected === true)
+											.getAttribute('data-itemid')
+											.replace('У', 'U')
+							);
+						}
+
+						//separate case for vent selector
+						else if (element.id === 'selector-ventSystem') {
+							//means V1, V2
+							if (
+								Number(
+									Array.from(element.children)
+										.find((option) => option.selected === true)
+										.getAttribute('data-itemid')
+										.slice(1)
+								) < 3
+							) {
+								//means 54, 55
+								Number(document.getElementById('selector-ip').value.slice(2) <= 55) &&
+									selectionArray.push(
+										Array.from(element.children)
+											.find((option) => option.selected === true)
+											.getAttribute('data-itemid') +
+											'_' +
+											document.getElementById('selector-ip').value
+									);
+							} else {
+								selectionArray.push(
+									Array.from(element.children)
+										.find((option) => option.selected === true)
+										.getAttribute('data-itemid')
+								);
+							}
+
+							//rest cases
+						} else {
+							selectionArray.push(
+								Array.from(element.children)
+									.find((option) => option.selected === true)
+									.getAttribute('data-itemid')
+							);
+						}
+
+						break;
+					}
+			}
+		});
+
+		this.price += Object.keys(pricelist).reduce(
+			(acc, curr) => (selectionArray.indexOf(curr) !== -1 ? (acc += Number(pricelist[curr])) : acc),
+			0
+		);
+
+		if (isNaN(this.price)) {
+			console.log('Цену необходимо уточнять');
+		} else {
+			console.log(this.price);
+			return this.price;
+		}
 	},
 };

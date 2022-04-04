@@ -7,23 +7,25 @@
 	font-family: 'Montserrat' !important;
 }
 
-//vars:
+////variables:
+//colors:
+$clr-emerald: #017987;
+$clr-beige-light: #eee;
+$clr-orange: #f46b25;
 
-//bg-colors:
-$bg-emerald: #017987;
-
-//border colors:
-$bord-btm-light: #eee;
-
-//sevice classes:
+////sevice classes:
 .btn {
 	&:hover {
 		cursor: pointer;
 	}
 }
 
+.form-switch {
+	display: block !important;
+}
+
 .btn-option-selected {
-	background-color: $bg-emerald;
+	background-color: $clr-emerald !important;
 	color: #fff;
 }
 
@@ -55,22 +57,23 @@ body {
 	nav {
 		width: inherit;
 		height: 30px;
-		background-color: $bg-emerald;
+		background-color: $clr-emerald;
 	}
 
 	header {
 		width: 100%;
 		height: 15vh;
-		border-bottom: 1px solid $bord-btm-light;
+		border-bottom: 1px solid $clr-beige-light;
 	}
 
 	main {
 		width: 100%;
-		height: 150vh;
+		height: 160vh;
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		overflow-y: hidden;
+		overflow: hidden;
 		position: relative;
+		justify-content: center;
 
 		.mask {
 			position: absolute;
@@ -103,11 +106,12 @@ body {
 				align-items: center;
 				justify-content: space-evenly;
 				width: 100%;
-				border-bottom: 1px solid $bord-btm-light;
+				border-bottom: 1px solid $clr-beige-light;
+				min-height: 25vh;
 
 				.container-reverse-selection {
 					position: absolute;
-					top: 10%;
+					top: 10px;
 				}
 
 				.list {
@@ -147,10 +151,10 @@ body {
 			}
 
 			&-selection {
-				max-width: 50%;
-				overflow-x: hidden;
-				margin-left: 4%;
-				transform: translateY(-3000px);
+				max-width: 250px;
+				overflow: hidden;
+				margin-left: 20px;
+				transform: translateX(-3000px);
 				transition: all 0.8s ease-in-out;
 
 				.list {
@@ -162,21 +166,50 @@ body {
 					li {
 						display: flex;
 						flex-direction: column;
+
+						ul {
+							display: flex;
+							flex-direction: column;
+							justify-content: flex-end;
+							height: 200px;
+							text-align: center;
+						}
 					}
 				}
 			}
 
 			&-render {
-				transform: translateY(3000px);
+				transform: translateX(3000px);
 				transition: all 0.8s ease-in-out;
+				padding-left: 20px;
+				width: 70vw;
+
+				h2,
+				h3 {
+					text-align: center;
+					max-width: 70%;
+					margin: 0 auto;
+					font-weight: 700;
+				}
+
+				img {
+					width: 600px;
+					height: 400px;
+					display: block;
+					margin: 0 auto;
+					object-fit: contain;
+				}
 
 				.chart-description {
+					padding: 20px 0px 0px 60px;
+
 					.listItem-upgrades {
 						display: flex;
 						justify-content: space-evenly;
 						align-items: center;
 						width: 100%;
 						margin-top: 3%;
+						padding-left: 20px;
 					}
 				}
 			}
@@ -203,8 +236,8 @@ body {
 
 	footer {
 		width: 100%;
-		height: 45vh;
-		background-color: $bg-emerald;
+
+		background-color: $clr-emerald;
 	}
 }
 

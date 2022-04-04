@@ -93,18 +93,18 @@
 					</li>
 
 					<li>
-						<label for="selector-vent"> Тип вентиляции </label>
+						<label for="selector-ventSystem"> Тип вентиляции </label>
 						<select id="selector-ventSystem"></select>
 					</li>
 
-					<li>
+					<li class="form-check form-switch">
 						<label for="checkbox-encoder"> Энкодер </label>
-						<input type="checkbox" id="checkbox-encoder" data-itemId="N" />
+						<input type="checkbox" id="checkbox-encoder" data-itemId="N" class="form-check-input" role="switch" />
 					</li>
 
-					<li>
+					<li class="form-check form-switch">
 						<label for="checkbox-conicShaft"> Конический вал </label>
-						<input type="checkbox" id="checkbox-conicShaft" data-itemId="conicshaft" />
+						<input type="checkbox" id="checkbox-conicShaft" data-itemId="conicshaft" class="form-check-input" role="switch" />
 					</li>
 				</ul>
 			</section>
@@ -112,19 +112,9 @@
 			<!--area render-->
 			<section class="area-render" id="area-render">
 				<h2 id="model-name"></h2>
+				<img id="img-drawing" alt="Здесь должен быть чертеж двигателя..."/>
+					
 				<h3>Присоединительные размеры</h3>
-				<img
-					style="
-						width: 600px;
-						height: 400px;
-						border: 0.5px #000 dotted;
-						display: block;
-						margin: 0 auto;
-						object-fit: contain;
-					"
-					id="img-drawing"
-				/>
-
 				<div class="chart-connectionParams" id="chart-connectionParams"> </div>
 
 				<ul class="list chart-description">

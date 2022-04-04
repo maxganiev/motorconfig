@@ -1,3 +1,4 @@
+export const main = document.getElementsByTagName('main')[0];
 export const inputModel = document.getElementById('input-model');
 export const selectorModel = document.getElementById('selector-model');
 export const selectorRpm = document.getElementById('selector-rpm');

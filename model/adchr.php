@@ -381,9 +381,4 @@ class ModelToolAdchrTestAdchr extends Model
 
 		return $arg;
 	}
-
-	public function getPrice()
-	{
-		//request by framesize and return complete range pricelist, make calculations on client
-	}
 }

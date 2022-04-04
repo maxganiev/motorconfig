@@ -1,8 +1,7 @@
-import { areaSelection } from '../ux/global_dom';
+import { areaSelection, checkboxConicShaft } from '../ux/global_dom';
 import { optionsConfig } from './base_options_list';
-import { populateOptionsList } from '../ux/selectFunctions';
-import { optionsSelector } from '../ux/selectFunctions';
-import { checkboxConicShaft } from '../ux/global_dom';
+import { populateOptionsList, optionsSelector } from '../ux/selectFunctions';
+import { recalculateHeight } from '../ui/ui';
 
 //заливка доступного для габарита опционала при выборе модели двигателя:
 export function fillExtraOptions() {
@@ -154,11 +153,13 @@ export function fillExtraOptions() {
 					}
 
 					areaSelection.insertBefore(listItem, checkboxConicShaft.parentElement);
+					recalculateHeight(areaSelection);
 				});
 			}
 		} //если нет - стираем существующие опции для энкодера:
 		else {
 			Array.from(areaSelection.children).forEach((child) => child.id.includes('encoder-group-id') && child.remove());
+			recalculateHeight(areaSelection);
 		}
 	}
 }
@@ -168,9 +169,10 @@ function createCheckBoxes(parentElem, checkboxId, dataAttr, checkboxIsSelectable
 	const listItem = document.createElement('li');
 
 	const checkbox = document.createElement('input');
-	checkbox.setAttribute('type', 'checkbox');
+	const attrs = [{ type: 'checkbox' }, { 'data-itemid': dataAttr }, { role: 'switch' }];
+	attrs.forEach((attr) => checkbox.setAttribute(Object.keys(attr)[0], Object.values(attr)[0]));
+	checkbox.classList.add('form-check-input');
 	checkbox.id = checkboxId;
-	checkbox.setAttribute('data-itemId', dataAttr);
 	checkbox.disabled = checkboxIsSelectable;
 	checkbox.checked = checkboxIsCheckedByDefault !== null && checkboxIsCheckedByDefault;
 
@@ -180,6 +182,7 @@ function createCheckBoxes(parentElem, checkboxId, dataAttr, checkboxIsSelectable
 
 	listItem.appendChild(label);
 	listItem.appendChild(checkbox);
+	listItem.classList.add('form-check', 'form-switch');
 
 	parentElem.appendChild(listItem);
 

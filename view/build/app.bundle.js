@@ -1980,6 +1980,7 @@ module.exports = function (COLLECTION) {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+var main = exports.main = document.getElementsByTagName('main')[0];
 var inputModel = exports.inputModel = document.getElementById('input-model');
 var selectorModel = exports.selectorModel = document.getElementById('selector-model');
 var selectorRpm = exports.selectorRpm = document.getElementById('selector-rpm');
@@ -4496,14 +4497,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 //получение списка опций из полей ввода (селекторы, чекбоксы):
 var getOptions = exports.getOptions = function () {
-	var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(selectorsId, operationType) {
+	var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(selectorsId, operationType) {
 		var electroMagneticBreak, paws, ventSystem, pawTypeAttr, ventTypeAttr, input, modelName, postData, formData, url, req, res, frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType;
-		return regeneratorRuntime.wrap(function _callee3$(_context3) {
+		return regeneratorRuntime.wrap(function _callee2$(_context2) {
 			while (1) {
-				switch (_context3.prev = _context3.next) {
+				switch (_context2.prev = _context2.next) {
 					case 0:
 						if (!(_global_dom.selectorModel.value !== '-')) {
-							_context3.next = 40;
+							_context2.next = 40;
 							break;
 						}
 
@@ -4523,7 +4524,7 @@ var getOptions = exports.getOptions = function () {
 							}
 						}
 
-						_context3.prev = 4;
+						_context2.prev = 4;
 
 						_ui.mask.removeMask();
 						pawTypeAttr = Array.from(_global_dom.selectorPaws.children).find(function (option) {
@@ -4557,7 +4558,7 @@ var getOptions = exports.getOptions = function () {
 						_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
 						_ui.mask.getMaskParams();
 
-						_context3.next = 18;
+						_context2.next = 18;
 						return fetch(url, {
 							method: 'POST',
 							body: formData,
@@ -4567,12 +4568,12 @@ var getOptions = exports.getOptions = function () {
 						});
 
 					case 18:
-						req = _context3.sent;
-						_context3.next = 21;
+						req = _context2.sent;
+						_context2.next = 21;
 						return req.json();
 
 					case 21:
-						res = _context3.sent;
+						res = _context2.sent;
 
 
 						motorCost.calculateCost(postData.filter(function (data) {
@@ -4581,7 +4582,11 @@ var getOptions = exports.getOptions = function () {
 							return Object.keys(data)[0] === 'pawtype';
 						})[0].pawtype, res.find(function (r) {
 							return Object.keys(r)[0] === 'pricelist';
-						}).pricelist);
+						}).pricelist, [].concat(_toConsumableArray(Array.from(document.getElementById('list-windingSensors').children).map(function (child) {
+							return child.firstElementChild;
+						})), _toConsumableArray(Array.from(document.getElementById('list-bearingSensors').children).map(function (child) {
+							return child.firstElementChild;
+						})), [document.getElementById('checkbox-antiCondenseHeater'), document.getElementById('selector-ip'), _global_dom.checkboxEncoder, document.getElementById('selector-importBearings'), document.getElementById('selector-climateCat'), _global_dom.selectorVentSystem, document.getElementById('checkbox-vibrosensors'), _global_dom.checkboxConicShaft, document.getElementById('checkbox-currentInsulatingBearing'), document.getElementById('checkbox-package')]));
 
 						setChartConnectionDims(res.find(function (r) {
 							return Object.keys(r)[0] === 'dims';
@@ -4589,16 +4594,16 @@ var getOptions = exports.getOptions = function () {
 						fillUpgradesChart();
 						setModelName();
 						_ui.mask.removeMask();
-						_context3.next = 35;
+						_context2.next = 35;
 						break;
 
 					case 29:
-						_context3.prev = 29;
-						_context3.t0 = _context3['catch'](4);
+						_context2.prev = 29;
+						_context2.t0 = _context2['catch'](4);
 
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
-						console.log(_context3.t0);
+						console.log(_context2.t0);
 						alert('Smth is broken...');
 
 					case 35:
@@ -4616,14 +4621,14 @@ var getOptions = exports.getOptions = function () {
 
 					case 40:
 					case 'end':
-						return _context3.stop();
+						return _context2.stop();
 				}
 			}
-		}, _callee3, this, [[4, 29]]);
+		}, _callee2, this, [[4, 29]]);
 	}));
 
-	return function getOptions(_x3, _x4) {
-		return _ref3.apply(this, arguments);
+	return function getOptions(_x2, _x3) {
+		return _ref2.apply(this, arguments);
 	};
 }();
 
@@ -4632,16 +4637,47 @@ var getOptions = exports.getOptions = function () {
 
 //обратный вывод опций от инпута:
 var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
-	var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(e) {
-		var elements, arr_valueToDecode;
-		return regeneratorRuntime.wrap(function _callee4$(_context4) {
-			while (1) {
-				switch (_context4.prev = _context4.next) {
-					case 0:
-						_context4.prev = 0;
+	var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(e) {
+		var _recurse, subchilds, elements, arr_valueToDecode;
 
-						//mask.removeMask();
-						elements = getChildsRecursively(_global_dom.areaSelection.children);
+		return regeneratorRuntime.wrap(function _callee3$(_context3) {
+			while (1) {
+				switch (_context3.prev = _context3.next) {
+					case 0:
+						_context3.prev = 0;
+
+						_recurse = function _recurse(elem) {
+							if (elem.firstElementChild === null) {
+								elements.push(elem);
+
+								if (elem.nextElementSibling === null) {
+									return;
+								} else {
+									_recurse(elem.nextElementSibling);
+								}
+							} else {
+								_recurse(elem.firstElementChild);
+							}
+						};
+
+						subchilds = Array.from(_global_dom.areaSelection.children).slice(1).map(function (child) {
+							return child.firstElementChild.tagName === 'UL' ? Array.from(child.firstElementChild.children).reduce(function (acc, curr) {
+								return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
+							}, []).concat(Array.from(child.firstElementChild.nextElementSibling.children).reduce(function (acc, curr) {
+								return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
+							}, [])) : Array.from(child.children);
+						}).flat(1).filter(function (subchild) {
+							return subchild.tagName !== 'LABEL';
+						});
+
+						//	console.log(subchilds);
+
+						elements = [];
+
+						subchilds.forEach(function (sub) {
+							return _recurse(sub);
+						});
+
 						arr_valueToDecode = _global_dom.input_reverseSelection.value.split('/')[1].split('-').slice(1).map(function (val) {
 							return (
 								//handling case for sensors: val.length > 1 means 2 digits, like Б12, Б24 etc:
@@ -4720,36 +4756,39 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 						});
 
 						e.target.disabled = true;
-						_context4.next = 7;
+						_context3.next = 10;
 						return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'resetOptionsList');
 
-					case 7:
+					case 10:
 						e.target.disabled = false;
-						_context4.next = 17;
+						_context3.next = 20;
 						break;
 
-					case 10:
-						_context4.prev = 10;
-						_context4.t0 = _context4['catch'](0);
+					case 13:
+						_context3.prev = 13;
+						_context3.t0 = _context3['catch'](0);
 
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
 						e.target.disabled = false;
 						alert('Введено что-то не то');
-						console.log(_context4.t0);
+						console.log(_context3.t0);
 
-					case 17:
+					case 20:
 					case 'end':
-						return _context4.stop();
+						return _context3.stop();
 				}
 			}
-		}, _callee4, this, [[0, 10]]);
+		}, _callee3, this, [[0, 13]]);
 	}));
 
-	return function selectOptionsReversevely(_x5) {
-		return _ref5.apply(this, arguments);
+	return function selectOptionsReversevely(_x4) {
+		return _ref4.apply(this, arguments);
 	};
 }();
+
+//расчет стоимости:
+
 
 exports.searchModel = searchModel;
 exports.populateOptionsList = populateOptionsList;
@@ -4770,9 +4809,9 @@ var _extra_options_list = __webpack_require__(341);
 
 var _ui = __webpack_require__(134);
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
@@ -4780,61 +4819,37 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 var models = exports.models = {
 	itemsList: [],
 	getModel: function () {
-		var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(query) {
+		var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(query) {
+			var formData, url, req, res, _formData, postData, _url, _req, _res, fillModelsOptions, targetObj, checkboxCurrentInsulatingBearing, selectorImportBearings;
 
-			//filling models selector with options:
-			var fillModelsOptions = function () {
-				var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(targetObject) {
-					var option, sliced, frameSize;
-					return regeneratorRuntime.wrap(function _callee$(_context) {
-						while (1) {
-							switch (_context.prev = _context.next) {
-								case 0:
-									option = document.createElement('option');
-
-
-									option.value = option.innerText = _global_vars.motorStandartSetter.selected === '5AI' ? targetObject.model + ' ' + targetObject.attrs.find(function (item) {
-										return item.attribute_id == 33;
-									}).text + '/' + targetObject.attrs.find(function (item) {
-										return item.attribute_id == 36;
-									}).text : targetObject.model;
-
-									sliced = targetObject.model.slice(4).split('').map(function (w) {
-										return w !== ' ' && !isNaN(Number(w)) && Number(w);
-									});
-									frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
-
-									option.setAttribute('data-itemId', frameSize);
-									_global_dom.selectorModel.appendChild(option);
-
-								case 6:
-								case 'end':
-									return _context.stop();
-							}
-						}
-					}, _callee, this);
-				}));
-
-				return function fillModelsOptions(_x2) {
-					return _ref2.apply(this, arguments);
-				};
-			}();
-
-			//if received json is array:
-
-
-			var formData, url, req, res, _formData, postData, _url, _req, _res, targetObj, checkboxCurrentInsulatingBearing, selectorImportBearings;
-
-			return regeneratorRuntime.wrap(function _callee2$(_context2) {
+			return regeneratorRuntime.wrap(function _callee$(_context) {
 				while (1) {
-					switch (_context2.prev = _context2.next) {
+					switch (_context.prev = _context.next) {
 						case 0:
+							fillModelsOptions = function fillModelsOptions(targetObject) {
+								var option = document.createElement('option');
+
+								option.value = option.innerText = _global_vars.motorStandartSetter.selected === '5AI' ? targetObject.model + ' ' + targetObject.attrs.find(function (item) {
+									return item.attribute_id == 33;
+								}).text + '/' + targetObject.attrs.find(function (item) {
+									return item.attribute_id == 36;
+								}).text : targetObject.model;
+
+								var sliced = targetObject.model.slice(4).split('').map(function (w) {
+									return w !== ' ' && !isNaN(Number(w)) && Number(w);
+								});
+
+								var frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
+								option.setAttribute('data-itemId', frameSize);
+								_global_dom.selectorModel.appendChild(option);
+							};
+
 							if (!(typeof query === 'string')) {
-								_context2.next = 28;
+								_context.next = 29;
 								break;
 							}
 
-							_context2.prev = 1;
+							_context.prev = 2;
 							formData = new FormData();
 
 							formData.append('type', _global_vars.motorStandartSetter.selected);
@@ -4845,7 +4860,7 @@ var models = exports.models = {
 							_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
 							_ui.mask.getMaskParams();
 
-							_context2.next = 10;
+							_context.next = 11;
 							return fetch(url, {
 								method: 'POST',
 								body: formData,
@@ -4854,13 +4869,13 @@ var models = exports.models = {
 								}
 							});
 
-						case 10:
-							req = _context2.sent;
-							_context2.next = 13;
+						case 11:
+							req = _context.sent;
+							_context.next = 14;
 							return req.json();
 
-						case 13:
-							res = _context2.sent;
+						case 14:
+							res = _context.sent;
 
 							console.log(res);
 
@@ -4872,29 +4887,29 @@ var models = exports.models = {
 								_ui.mask.getMaskParams();
 								alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
 							}
-							_context2.next = 26;
+							_context.next = 27;
 							break;
 
-						case 20:
-							_context2.prev = 20;
-							_context2.t0 = _context2['catch'](1);
+						case 21:
+							_context.prev = 21;
+							_context.t0 = _context['catch'](2);
 
-							console.log(_context2.t0);
+							console.log(_context.t0);
 							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 							_ui.mask.getMaskParams();
 							this.itemsList = [];
 
-						case 26:
-							_context2.next = 53;
+						case 27:
+							_context.next = 54;
 							break;
 
-						case 28:
+						case 29:
 							if (!((typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query))) {
-								_context2.next = 53;
+								_context.next = 54;
 								break;
 							}
 
-							_context2.prev = 29;
+							_context.prev = 30;
 							_formData = new FormData();
 							postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: _global_vars.motorStandartSetter.selected }];
 
@@ -4908,7 +4923,7 @@ var models = exports.models = {
 							_ui.mask.createMask('/image/catalog/adchr/spinner.svg');
 							_ui.mask.getMaskParams();
 
-							_context2.next = 38;
+							_context.next = 39;
 							return fetch(_url, {
 								method: 'POST',
 								body: _formData,
@@ -4917,34 +4932,40 @@ var models = exports.models = {
 								}
 							});
 
-						case 38:
-							_req = _context2.sent;
-							_context2.next = 41;
+						case 39:
+							_req = _context.sent;
+							_context.next = 42;
 							return _req.json();
 
-						case 41:
-							_res = _context2.sent;
+						case 42:
+							_res = _context.sent;
 
 							console.log(_res);
 							this.itemsList = _res;
 							_ui.mask.removeMask();
-							_context2.next = 53;
+							_context.next = 54;
 							break;
 
-						case 47:
-							_context2.prev = 47;
-							_context2.t1 = _context2['catch'](29);
+						case 48:
+							_context.prev = 48;
+							_context.t1 = _context['catch'](30);
 
-							console.log(_context2.t1);
+							console.log(_context.t1);
 							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 							_ui.mask.getMaskParams();
 							this.itemsList = [];
 
-						case 53:
+						case 54:
 
 							Array.from(_global_dom.selectorModel.children).forEach(function (child, index) {
 								return index !== 0 && child.remove();
-							});if (_typeof(this.itemsList) === 'object' && Array.isArray(this.itemsList)) {
+							});
+
+							//filling models selector with options:
+
+
+							//if received json is array:
+							if (_typeof(this.itemsList) === 'object' && Array.isArray(this.itemsList)) {
 								this.itemsList.forEach(function (obj) {
 									fillModelsOptions(obj);
 								});
@@ -4959,17 +4980,17 @@ var models = exports.models = {
 							//автопроставление модели и опций для нее при поиске, если модель найдена и опция подружена в селект:
 
 							if (!(_global_dom.selectorModel.children[1] !== undefined && _typeof(_global_dom.selectorModel.children[1]) !== undefined)) {
-								_context2.next = 72;
+								_context.next = 73;
 								break;
 							}
 
 							_ui.mask.removeMask();
 
 							_global_dom.selectorModel.children[1].selected = true;
-							_context2.next = 60;
+							_context.next = 61;
 							return getOptions([_global_dom.selectorBrakes, _global_dom.selectorPaws, _global_dom.selectorVentSystem], 'populateOptionsList');
 
-						case 60:
+						case 61:
 
 							//перезаливка наименования:
 							setModelName();
@@ -5030,16 +5051,16 @@ var models = exports.models = {
 							}) && optionsSelector.frameSize >= 200) {
 								setModelDescription('addData', 'checkbox-currentInsulatingBearing');
 							}
-							_context2.next = 75;
+							_context.next = 76;
 							break;
 
-						case 72:
+						case 73:
 							//маска для поля выбора, чтобы пользователь не мог им воспользоваться, пока не скорректирует поиск:
 							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 							_ui.mask.getMaskParams();
 							this.itemsList = [];
 
-						case 75:
+						case 76:
 
 							if (typeof query === 'string' && query.length < 4 && !query.match(_global_vars.regex) || (typeof query === 'undefined' ? 'undefined' : _typeof(query)) === 'object' && Array.isArray(query) && query.some(function (param) {
 								return param === '-';
@@ -5049,12 +5070,12 @@ var models = exports.models = {
 								});
 							}
 
-						case 76:
+						case 77:
 						case 'end':
-							return _context2.stop();
+							return _context.stop();
 					}
 				}
-			}, _callee2, this, [[1, 20], [29, 47]]);
+			}, _callee, this, [[2, 21], [30, 48]]);
 		}));
 
 		function getModel(_x) {
@@ -5154,8 +5175,8 @@ var optionsSelector = exports.optionsSelector = {
 
 		(0, _extra_options_list.fillExtraOptions)();
 
-		(0, _ui.setTransforms)(_global_dom.areaSelection.parentElement, '0px', 'Y');
-		(0, _ui.setTransforms)(_global_dom.areaRender, '0px', 'Y');
+		(0, _ui.setTransforms)(_global_dom.areaSelection.parentElement, '0px', 'X');
+		(0, _ui.setTransforms)(_global_dom.areaRender, '0px', 'X');
 
 		var _this = this;
 		this.currSelectionToGetImg = {
@@ -5485,19 +5506,13 @@ function fillUpgradesChart() {
 			var list = document.createElement('ul');
 			list.classList.add('list', listId);
 
-			var power = optionsConfigPropToFindValue !== null && optionsConfigPropToFindValue.find(function (opt) {
-				return opt.type === valueToSearch;
-			}).power;
-
-			var upgradesList = upgradeObjData;
-
 			Array.from(list.children).forEach(function (child) {
 				return child.remove();
 			});
 
 			list.insertAdjacentHTML('afterbegin', '<li> <span style="font-weight: 900;"> ' + colName + ' </span> </li>');
 
-			upgradesList.forEach(function (upg) {
+			upgradeObjData.forEach(function (upg) {
 				var listItem = document.createElement('li');
 				listItem.innerHTML = upg.description + ': ' + upg.data;
 
@@ -5506,7 +5521,9 @@ function fillUpgradesChart() {
 
 			if (optionsConfigPropToFindValue !== null) {
 				var listItem = document.createElement('li');
-				listItem.innerHTML = textForPower + ': ' + power + '\u043A\u0412\u0442';
+				listItem.innerHTML = textForPower + ': ' + optionsConfigPropToFindValue.find(function (opt) {
+					return opt.type === valueToSearch;
+				}).power + '\u043A\u0412\u0442';
 
 				list.appendChild(listItem);
 			}
@@ -5519,6 +5536,8 @@ function fillUpgradesChart() {
 				}) && ul.remove();
 			});
 		}
+
+		(0, _ui.recalculateHeight)(_global_dom.areaRender);
 	}
 }
 
@@ -5611,48 +5630,10 @@ function setModelName() {
 			}).getAttribute('data-itemid') : '';
 		}
 	}, 10);
-}
-
-function getChildsRecursively(rootElement) {
-	var subchilds = Array.from(rootElement).slice(1).map(function (child) {
-		return child.firstElementChild.tagName === 'UL' ? Array.from(child.firstElementChild.children).reduce(function (acc, curr) {
-			return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
-		}, []).concat(Array.from(child.firstElementChild.nextElementSibling.children).reduce(function (acc, curr) {
-			return [].concat(_toConsumableArray(acc), [curr.firstElementChild]);
-		}, [])) : Array.from(child.children);
-	}).flat(1).filter(function (subchild) {
-		return subchild.tagName !== 'LABEL';
-	});
-
-	//	console.log(subchilds);
-
-	var elements = [];
-	subchilds.forEach(function (sub) {
-		return recurse(sub);
-	});
-
-	function recurse(elem) {
-		if (elem.firstElementChild === null) {
-			elements.push(elem);
-
-			if (elem.nextElementSibling === null) {
-				return;
-			} else {
-				recurse(elem.nextElementSibling);
-			}
-		} else {
-			recurse(elem.firstElementChild);
-		}
-	}
-
-	return elements;
-}
-
-//расчет стоимости:
-var motorCost = {
+}var motorCost = {
 	price: null,
 
-	calculateCost: function calculateCost(modelName, pawtype, pricelist) {
+	calculateCost: function calculateCost(modelName, pawtype, pricelist, elements) {
 		var modelItem = Array.isArray(models.itemsList) ? models.itemsList.filter(function (model) {
 			return model.model === modelName;
 		})[0] : models.itemsList;
@@ -5661,17 +5642,76 @@ var motorCost = {
 			return offer.model.slice(offer.model.lastIndexOf(' ')).trim() === pawtype;
 		})[0];
 
-		//console.log(currentType);
-		this.price = _global_dom.selectorBrakes.value === '-' ? currentType.price : currentType.brake.price;
+		console.log(currentType);
+		this.price = _global_dom.selectorBrakes.value === '-' ? Number(currentType.price) : Number(currentType.brake.price);
 
 		//console.log(this.price);
 		console.log(pricelist);
 
-		// const elements = getChildsRecursively(areaSelection.children);
+		//selection array:
+		var selectionArray = [];
 
-		// elements.forEach((element) => {
-		// 	console.log(element);
-		// });
+		elements.forEach(function (element) {
+			switch (element.tagName) {
+				case 'BUTTON':
+					!element.classList.contains('btn-option-non-selected') && selectionArray.push(element.getAttribute('data-itemid').replace('Б', 'B'));
+
+					break;
+
+				case 'INPUT':
+					element.checked && selectionArray.push(element.getAttribute('data-itemid'));
+
+					break;
+
+				case 'SELECT':
+					if (element.value !== '-') {
+						//separate case for climate type selector
+						if (element.id === 'selector-climateCat') {
+							selectionArray.push(element.value.includes('УХЛ') ? Array.from(element.children).find(function (option) {
+								return option.selected === true;
+							}).getAttribute('data-itemid').replace('УХЛ', 'UHL') : Array.from(element.children).find(function (option) {
+								return option.selected === true;
+							}).getAttribute('data-itemid').replace('У', 'U'));
+						}
+
+						//separate case for vent selector
+						else if (element.id === 'selector-ventSystem') {
+								//means V1, V2
+								if (Number(Array.from(element.children).find(function (option) {
+									return option.selected === true;
+								}).getAttribute('data-itemid').slice(1)) < 3) {
+									//means 54, 55
+									Number(document.getElementById('selector-ip').value.slice(2) <= 55) && selectionArray.push(Array.from(element.children).find(function (option) {
+										return option.selected === true;
+									}).getAttribute('data-itemid') + '_' + document.getElementById('selector-ip').value);
+								} else {
+									selectionArray.push(Array.from(element.children).find(function (option) {
+										return option.selected === true;
+									}).getAttribute('data-itemid'));
+								}
+
+								//rest cases
+							} else {
+								selectionArray.push(Array.from(element.children).find(function (option) {
+									return option.selected === true;
+								}).getAttribute('data-itemid'));
+							}
+
+						break;
+					}
+			}
+		});
+
+		this.price += Object.keys(pricelist).reduce(function (acc, curr) {
+			return selectionArray.indexOf(curr) !== -1 ? acc += Number(pricelist[curr]) : acc;
+		}, 0);
+
+		if (isNaN(this.price)) {
+			console.log('Цену необходимо уточнять');
+		} else {
+			console.log(this.price);
+			return this.price;
+		}
 	}
 };
 
@@ -5689,6 +5729,7 @@ exports.mask = undefined;
 exports.setTransforms = setTransforms;
 exports.ls_getBtnSelectorStyle = ls_getBtnSelectorStyle;
 exports.ls_getScrollPos = ls_getScrollPos;
+exports.recalculateHeight = recalculateHeight;
 
 var _global_dom = __webpack_require__(66);
 
@@ -5746,6 +5787,14 @@ function ls_getScrollPos() {
 			window.scrollTo(0, localStorage.getItem('scrollPosY'));
 		}, 10);
 	}
+}
+
+function recalculateHeight(parentElem) {
+	parentElem.style.height = Array.from(parentElem.children).reduce(function (acc, curr) {
+		return acc + curr.clientHeight;
+	}, 0) * 1.15 + 'px';
+	_global_dom.main.style.height = '100%';
+	console.log(parentElem.clientHeight);
 }
 
 /***/ }),
@@ -11473,8 +11522,8 @@ function globeEvHandler() {
 			return child.innerText === selectorIp.value;
 		}).getAttribute('data-itemid');
 
+		(0, _selectFunctions.getOptions)(null);
 		(0, _selectFunctions.setModelDescription)('addData', selOptionIdOptionIP);
-		(0, _selectFunctions.setModelName)();
 	});
 
 	//choosing encoder:
@@ -11505,6 +11554,7 @@ function globeEvHandler() {
 
 				(0, _selectFunctions.setModelDescription)('removeData', e.target.id);
 			}
+			(0, _selectFunctions.getOptions)(null);
 		}
 
 		if (e.target.id === 'checkbox-antiCondenseHeater') {
@@ -11517,7 +11567,7 @@ function globeEvHandler() {
 
 				(0, _selectFunctions.setModelDescription)('removeData', e.target.id);
 			}
-			(0, _selectFunctions.setModelName)();
+			(0, _selectFunctions.getOptions)(null);
 		}
 
 		////encoder group:
@@ -11534,7 +11584,7 @@ function globeEvHandler() {
 
 		//currentInsulatingBearing:
 		if (e.target.id === 'checkbox-currentInsulatingBearing') {
-			_selectFunctions.optionsSelector.setOptionsList();
+			(0, _selectFunctions.getOptions)(null);
 
 			if (Array.from(e.target.classList).some(function (className) {
 				return className.includes('-checked');
@@ -11551,12 +11601,11 @@ function globeEvHandler() {
 				e.target.classList.replace('checkbox-currentInsulatingBearing-unchecked', 'checkbox-currentInsulatingBearing-checked');
 				(0, _selectFunctions.setModelDescription)('addData', e.target.id);
 			}
-			(0, _selectFunctions.setModelName)();
 		}
 
 		//importBearings:
 		if (e.target.id === 'selector-importBearings') {
-			_selectFunctions.optionsSelector.setOptionsList();
+			(0, _selectFunctions.getOptions)(null);
 
 			var selOptionId = Array.from(e.target.children).find(function (child) {
 				return child.innerText === e.target.value;
@@ -11567,8 +11616,6 @@ function globeEvHandler() {
 			} else {
 				(0, _selectFunctions.setModelDescription)('removeData', selOptionId);
 			}
-
-			(0, _selectFunctions.setModelName)();
 		}
 
 		//climateCat:
@@ -11578,7 +11625,7 @@ function globeEvHandler() {
 			}).getAttribute('data-itemid');
 
 			(0, _selectFunctions.setModelDescription)('addData', selOptionIdOptionIP);
-			(0, _selectFunctions.setModelName)();
+			(0, _selectFunctions.getOptions)(null);
 		}
 
 		//IP:
@@ -11591,21 +11638,12 @@ function globeEvHandler() {
 			(0, _selectFunctions.fillUpgradesChart)();
 
 			//перезаливка опций для системы вентиляции при смене IP:
-			var frameSize = _selectFunctions.optionsSelector.frameSize,
-			    encoderIsChecked = _selectFunctions.optionsSelector.encoderIsChecked,
-			    ventSystemOptionValue = _selectFunctions.optionsSelector.ventSystemOptionValue,
-			    brakeType = _selectFunctions.optionsSelector.brakeType;
-
-
-			_base_options_list.optionsConfig.fillBaseOptions(frameSize, encoderIsChecked, ventSystemOptionValue, brakeType, document.getElementById('checkbox-currentInsulatingBearing').checked, document.getElementById('selector-importBearings').value, e.target.value);
-
-			(0, _selectFunctions.populateOptionsList)([_global_dom.selectorVentSystem], [_base_options_list.optionsConfig.ventSystem], 'resetOptionsList');
-			(0, _selectFunctions.setModelName)();
+			(0, _selectFunctions.getOptions)([_global_dom.selectorVentSystem], 'resetOptionsList');
 		}
 
 		//package:
 		if (e.target.id === 'checkbox-package') {
-			console.log('checkbox-package', e.target.value);
+			(0, _selectFunctions.getOptions)(null);
 		}
 	});
 
@@ -11636,7 +11674,7 @@ function globeEvHandler() {
 					return cl.includes('Б');
 				}));
 			}
-			(0, _selectFunctions.setModelName)(e.target.tagName);
+			(0, _selectFunctions.getOptions)(null);
 		}
 	});
 
@@ -11978,6 +12016,8 @@ var _base_options_list = __webpack_require__(94);
 
 var _selectFunctions = __webpack_require__(133);
 
+var _ui = __webpack_require__(134);
+
 //заливка доступного для габарита опционала при выборе модели двигателя:
 function fillExtraOptions() {
 	var tempDataSensors = _base_options_list.optionsConfig.tempDataSensors,
@@ -12120,6 +12160,7 @@ function fillExtraOptions() {
 						}
 
 						_global_dom.areaSelection.insertBefore(listItem, _global_dom.checkboxConicShaft.parentElement);
+						(0, _ui.recalculateHeight)(_global_dom.areaSelection);
 					});
 				}
 			} //если нет - стираем существующие опции для энкодера:
@@ -12127,6 +12168,7 @@ function fillExtraOptions() {
 					Array.from(_global_dom.areaSelection.children).forEach(function (child) {
 						return child.id.includes('encoder-group-id') && child.remove();
 					});
+					(0, _ui.recalculateHeight)(_global_dom.areaSelection);
 				}
 		}
 }
@@ -12136,9 +12178,12 @@ function createCheckBoxes(parentElem, checkboxId, dataAttr, checkboxIsSelectable
 	var listItem = document.createElement('li');
 
 	var checkbox = document.createElement('input');
-	checkbox.setAttribute('type', 'checkbox');
+	var attrs = [{ type: 'checkbox' }, { 'data-itemid': dataAttr }, { role: 'switch' }];
+	attrs.forEach(function (attr) {
+		return checkbox.setAttribute(Object.keys(attr)[0], Object.values(attr)[0]);
+	});
+	checkbox.classList.add('form-check-input');
 	checkbox.id = checkboxId;
-	checkbox.setAttribute('data-itemId', dataAttr);
 	checkbox.disabled = checkboxIsSelectable;
 	checkbox.checked = checkboxIsCheckedByDefault !== null && checkboxIsCheckedByDefault;
 
@@ -12148,6 +12193,7 @@ function createCheckBoxes(parentElem, checkboxId, dataAttr, checkboxIsSelectable
 
 	listItem.appendChild(label);
 	listItem.appendChild(checkbox);
+	listItem.classList.add('form-check', 'form-switch');
 
 	parentElem.appendChild(listItem);
 

@@ -14,10 +14,8 @@ import {
 import {
 	searchModel,
 	getOptions,
-	optionsSelector,
 	setModelDescription,
 	fillUpgradesChart,
-	populateOptionsList,
 	setModelName,
 	selectOptionsReversevely,
 	models,
@@ -137,8 +135,8 @@ export function globeEvHandler() {
 			.find((child) => child.innerText === selectorIp.value)
 			.getAttribute('data-itemid');
 
+		getOptions(null);
 		setModelDescription('addData', selOptionIdOptionIP);
-		setModelName();
 	});
 
 	//choosing encoder:
@@ -169,6 +167,7 @@ export function globeEvHandler() {
 
 				setModelDescription('removeData', e.target.id);
 			}
+			getOptions(null);
 		}
 
 		if (e.target.id === 'checkbox-antiCondenseHeater') {
@@ -181,7 +180,7 @@ export function globeEvHandler() {
 
 				setModelDescription('removeData', e.target.id);
 			}
-			setModelName();
+			getOptions(null);
 		}
 
 		////encoder group:
@@ -198,7 +197,7 @@ export function globeEvHandler() {
 
 		//currentInsulatingBearing:
 		if (e.target.id === 'checkbox-currentInsulatingBearing') {
-			optionsSelector.setOptionsList();
+			getOptions(null);
 
 			if (Array.from(e.target.classList).some((className) => className.includes('-checked'))) {
 				e.target.checked = false;
@@ -217,12 +216,11 @@ export function globeEvHandler() {
 				);
 				setModelDescription('addData', e.target.id);
 			}
-			setModelName();
 		}
 
 		//importBearings:
 		if (e.target.id === 'selector-importBearings') {
-			optionsSelector.setOptionsList();
+			getOptions(null);
 
 			const selOptionId = Array.from(e.target.children)
 				.find((child) => child.innerText === e.target.value)
@@ -233,8 +231,6 @@ export function globeEvHandler() {
 			} else {
 				setModelDescription('removeData', selOptionId);
 			}
-
-			setModelName();
 		}
 
 		//climateCat:
@@ -244,7 +240,7 @@ export function globeEvHandler() {
 				.getAttribute('data-itemid');
 
 			setModelDescription('addData', selOptionIdOptionIP);
-			setModelName();
+			getOptions(null);
 		}
 
 		//IP:
@@ -257,25 +253,12 @@ export function globeEvHandler() {
 			fillUpgradesChart();
 
 			//перезаливка опций для системы вентиляции при смене IP:
-			const { frameSize, encoderIsChecked, ventSystemOptionValue, brakeType } = optionsSelector;
-
-			optionsConfig.fillBaseOptions(
-				frameSize,
-				encoderIsChecked,
-				ventSystemOptionValue,
-				brakeType,
-				document.getElementById('checkbox-currentInsulatingBearing').checked,
-				document.getElementById('selector-importBearings').value,
-				e.target.value
-			);
-
-			populateOptionsList([selectorVentSystem], [optionsConfig.ventSystem], 'resetOptionsList');
-			setModelName();
+			getOptions([selectorVentSystem], 'resetOptionsList');
 		}
 
 		//package:
 		if (e.target.id === 'checkbox-package') {
-			console.log('checkbox-package', e.target.value);
+			getOptions(null);
 		}
 	});
 
@@ -304,7 +287,7 @@ export function globeEvHandler() {
 					Array.from(e.target.classList).find((cl) => cl.includes('Б'))
 				);
 			}
-			setModelName(e.target.tagName);
+			getOptions(null);
 		}
 	});
 
