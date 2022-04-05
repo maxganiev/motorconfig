@@ -4,7 +4,7 @@
 			<!--area filter-->
 			<section class="area-filter" id="area-filter">
 					<div class="container-reverse-selection">
-					<input type="text" id="input-reverse-selection" autocomplete=off />
+					<input type="text" id="input-reverse-selection" class="form-control" autocomplete=off />
 					<button class="btn btn-reverse-selection" id="btn-reverse-selection">Расшифровать</button>
 				</div>
 				<ul class="list">
@@ -14,12 +14,12 @@
 					</li>
 					<li>
 						<label for="input-model"> Наименование </label>
-						<input type="text" placeholder="Начните ввод..." id="input-model" />
+						<input type="text" placeholder="Начните ввод..." id="input-model" class="form-control" />
 					</li>
 
 					<li>
 						<label for="selector-rpm"> Выбрать число оборотов (об/мин) </label>
-						<select id="selector-rpm">
+						<select id="selector-rpm" class="form-control form-control-sm">
 							<option value="-">-</option>
 							<option value="600">600</option>
 							<option value="750">750</option>
@@ -31,7 +31,7 @@
 
 					<li>
 						<label for="selector-power"> Выбрать мощность (кВт) </label>
-						<select id="selector-power">
+						<select id="selector-power" class="form-control form-control-sm">
 							<option value="-">-</option>
 							<option value="0.12">0.12</option>
 							<option value="0.18">0.18</option>
@@ -77,24 +77,24 @@
 				<ul class="list">
 					<li>
 						<label for="selector-model"> Модель электродвигателя </label>
-						<select id="selector-model">
+						<select id="selector-model" class="form-control form-control-sm">
 							<option value="-">-</option>
 						</select>
 					</li>
 
 					<li>
 						<label for="selector-breaks"> Тип тормозов </label>
-						<select id="selector-breaks"></select>
+						<select id="selector-breaks" class="form-control form-control-sm"></select>
 					</li>
 
 					<li>
-						<label for="selector-paws"> Тип лап </label>
-						<select id="selector-paws"></select>
+						<label for="selector-paws"> Тип исполнения </label>
+						<select id="selector-paws" class="form-control form-control-sm"></select>
 					</li>
 
 					<li>
 						<label for="selector-ventSystem"> Тип вентиляции </label>
-						<select id="selector-ventSystem"></select>
+						<select id="selector-ventSystem" class="form-control form-control-sm"></select>
 					</li>
 
 					<li class="form-check form-switch">
@@ -120,9 +120,15 @@
 				<ul class="list chart-description">
 					<li class="listItem-upgrades" id="listItem-upgrades"></li>
 				</ul>
+
+				<ul class="list-pricedata">
+					<li> 	<p id="para-price-printout" class="para-price-printout"> </p> </li>
+					<li> <a href="#" class="btn btn-sm btn-currency-convertor" id="btn-currency-convertor" title="Конвертировать в тенге" data-itemid="KZT"> </a> </li>
+					<li>  <a href="#" class="btn btn-sm btn-expand-offer" id="btn-expand-offer"> Показать цены на комплектующие </a> </li>
+				 </ul>
 			</section>
 		</main>
 <?php echo $footer; ?>
 
-  <script src="/catalog/view/javascript/podbor/adchr/build/app.bundle.js" defer></script>
+<script src="/catalog/view/javascript/podbor/adchr/build/app.bundle.js" defer></script>
 

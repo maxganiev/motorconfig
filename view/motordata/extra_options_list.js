@@ -48,7 +48,7 @@ export function fillExtraOptions() {
 			const listItem = document.createElement('li');
 
 			const btn = document.createElement('button');
-			btn.classList.add('btn-option-non-selected');
+			btn.classList.add('btn', 'btn-sm', 'btn-option-non-selected');
 			btn.id = `btn-options-sensors-id${index}`;
 			btn.classList.add(obj.id);
 			btn.setAttribute('data-itemId', obj.id);
@@ -115,6 +115,7 @@ export function fillExtraOptions() {
 						const inputEncoderRes = document.createElement('input');
 						inputEncoderRes.id = 'input-encoderResOptions';
 						inputEncoderRes.setAttribute('type', 'number');
+						inputEncoderRes.classList.add('form-control');
 
 						const label = document.createElement('label');
 						label.innerHTML = value.type;
@@ -124,31 +125,11 @@ export function fillExtraOptions() {
 						listItem.appendChild(inputEncoderRes);
 					} else {
 						if (index === 1) {
-							const selectorEncoderVoltage = document.createElement('select');
-							selectorEncoderVoltage.id = 'selector-encoderVoltage';
-
-							const label = document.createElement('label');
-							label.innerHTML = value[0].group;
-							label.htmlFor = 'selector-encoderVoltage';
-
-							populateOptionsList([selectorEncoderVoltage], [value], 'populateOptionsList');
-
-							listItem.insertAdjacentElement('afterbegin', label);
-							listItem.appendChild(selectorEncoderVoltage);
+							createSelects(listItem, 'selector-encoderVoltage', value);
 						}
 
 						if (index === 2) {
-							const selectorOutputSignal = document.createElement('select');
-							selectorOutputSignal.id = 'selector-outputSignal';
-
-							const label = document.createElement('label');
-							label.innerHTML = value[0].group;
-							label.htmlFor = 'selector-outputSignal';
-
-							populateOptionsList([selectorOutputSignal], [value], 'populateOptionsList');
-
-							listItem.insertAdjacentElement('afterbegin', label);
-							listItem.appendChild(selectorOutputSignal);
+							createSelects(listItem, 'selector-outputSignal', value);
 						}
 					}
 
@@ -195,9 +176,11 @@ function createCheckBoxes(parentElem, checkboxId, dataAttr, checkboxIsSelectable
 
 //func to create selects for baseOptions function:
 function createSelects(parentElem, selectId, srcDataToFillOptions) {
-	const listItem = document.createElement('li');
+	const listItem =
+		selectId !== 'selector-encoderVoltage' && selectId !== 'selector-outputSignal' ? document.createElement('li') : parentElem;
 	const selector = document.createElement('select');
 	selector.id = selectId;
+	selector.classList.add('form-control', 'form-control-sm');
 
 	const label = document.createElement('label');
 	label.htmlFor = selectId;
@@ -208,7 +191,7 @@ function createSelects(parentElem, selectId, srcDataToFillOptions) {
 
 	populateOptionsList([selector], [srcDataToFillOptions], 'populateOptionsList');
 
-	parentElem.appendChild(listItem);
+	selectId !== 'selector-encoderVoltage' && selectId !== 'selector-outputSignal' && parentElem.appendChild(listItem);
 }
 
 //вывод предупреждения при отсутствии выбора токоиз. подшипника для двигателей >= 200 габ.:
@@ -222,7 +205,10 @@ export function showWarning() {
 		selectorImportBearings.value !== 'Передний и задний шариковые подшипники (производства SKF/NSK/KOYO/FAG)'
 	) {
 		Array.from(checkboxCurrentInsulatingBearing.parentElement.childNodes).forEach((node, index) => index === 2 && node.remove());
-		checkboxCurrentInsulatingBearing.parentElement.insertAdjacentText('beforeend', optionsConfig.currentInsulatingBearing.warning);
+		checkboxCurrentInsulatingBearing.parentElement.insertAdjacentHTML(
+			'beforeend',
+			`<p class="warning"> ${optionsConfig.currentInsulatingBearing.warning} </p>`
+		);
 	} else {
 		Array.from(checkboxCurrentInsulatingBearing.parentElement.childNodes).forEach((node, index) => index === 2 && node.remove());
 	}

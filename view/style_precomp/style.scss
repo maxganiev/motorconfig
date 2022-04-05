@@ -12,12 +12,76 @@
 $clr-emerald: #017987;
 $clr-beige-light: #eee;
 $clr-orange: #f46b25;
+$clr-gray-light: rgba(201, 201, 201, 0.7);
+$clr-gray-mid: #666;
+
+//font sizes:
+$fs-lg: calc(0.6em + 1vmin);
+$fs-mid: calc(0.5em + 1vmin);
 
 ////sevice classes:
 .btn {
+	border-radius: 10px;
+	white-space: normal !important;
+	color: $clr-gray-mid;
+
 	&:hover {
 		cursor: pointer;
 	}
+}
+
+.form-check-input {
+	&:checked {
+		background-color: $clr-emerald !important;
+		border-color: #000 !important;
+	}
+
+	&:hover {
+		cursor: pointer !important;
+	}
+
+	&:disabled:hover {
+		cursor: not-allowed !important;
+	}
+}
+
+//revise exisiting old classes:
+.cart-lg-container {
+	position: absolute !important;
+	top: 0 !important;
+	left: 98% !important;
+	height: 100% !important;
+	width: 9% !important;
+
+	.col-md-1.hidden-sm.hidden-xs {
+		height: 100% !important;
+		width: 100% !important;
+		position: absolute !important;
+		top: 0 !important;
+
+		a {
+			height: 100% !important;
+		}
+	}
+}
+
+//// core elements:
+label {
+	font-size: $fs-lg !important;
+	font-weight: 700;
+}
+
+select {
+	font-size: inherit !important;
+	option:disabled {
+		background-color: $clr-gray-light !important;
+	}
+}
+
+////service classes:
+
+.form-control {
+	width: 80% !important;
 }
 
 .form-switch {
@@ -26,12 +90,15 @@ $clr-orange: #f46b25;
 
 .btn-option-selected {
 	background-color: $clr-emerald !important;
-	color: #fff;
+	color: #fff !important;
 }
 
 .btn-option-non-selected {
 	background-color: transparent;
-	color: #000;
+}
+
+.btn-sm {
+	font-size: 11.2px !important;
 }
 
 .flex-row {
@@ -39,6 +106,7 @@ $clr-orange: #f46b25;
 	justify-content: space-evenly;
 	align-items: center;
 	flex-direction: row !important;
+	gap: 5px;
 }
 
 .warning {
@@ -107,11 +175,21 @@ body {
 				justify-content: space-evenly;
 				width: 100%;
 				border-bottom: 1px solid $clr-beige-light;
-				min-height: 25vh;
+				min-height: 30vh;
 
 				.container-reverse-selection {
 					position: absolute;
 					top: 10px;
+					display: flex;
+					width: 30%;
+					justify-content: space-evenly;
+
+					.btn-reverse-selection {
+						background-color: $clr-orange;
+						color: #fff;
+						font-size: $fs-mid;
+						margin-left: 10px;
+					}
 				}
 
 				.list {
@@ -156,6 +234,9 @@ body {
 				margin-left: 20px;
 				transform: translateX(-3000px);
 				transition: all 0.8s ease-in-out;
+				font-size: $fs-lg;
+				border-right: 0.5px #eee solid;
+				padding-right: 20px;
 
 				.list {
 					display: flex;
@@ -173,6 +254,14 @@ body {
 							justify-content: flex-end;
 							height: 200px;
 							text-align: center;
+							flex: 1;
+							padding-left: 0 !important;
+							margin-top: 10px;
+							font-size: $fs-mid;
+
+							li {
+								margin-bottom: 10px;
+							}
 						}
 					}
 				}
@@ -183,6 +272,7 @@ body {
 				transition: all 0.8s ease-in-out;
 				padding-left: 20px;
 				width: 70vw;
+				position: relative;
 
 				h2,
 				h3 {
@@ -202,6 +292,7 @@ body {
 
 				.chart-description {
 					padding: 20px 0px 0px 60px;
+					font-size: $fs-mid;
 
 					.listItem-upgrades {
 						display: flex;
@@ -210,6 +301,40 @@ body {
 						width: 100%;
 						margin-top: 3%;
 						padding-left: 20px;
+					}
+				}
+
+				.list-pricedata {
+					display: flex;
+					width: 80%;
+					margin: 0 auto;
+					justify-content: start;
+					align-items: flex-start;
+					margin-top: 40px;
+					gap: 5px;
+					flex-wrap: wrap;
+				}
+
+				li {
+					&:first-of-type {
+						width: 100%;
+
+						.para-price-printout {
+							margin: unset;
+							font-size: $fs-mid;
+						}
+					}
+
+					.btn-currency-convertor {
+						background: url('/image/catalog/adchr/kz.svg') center center/cover;
+						width: 40px;
+						height: 30px;
+					}
+
+					.btn-expand-offer {
+						background-color: $clr-orange;
+						color: #fff;
+						font-size: $fs-mid;
 					}
 				}
 			}

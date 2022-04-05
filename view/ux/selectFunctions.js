@@ -16,6 +16,7 @@ import {
 	h2ModelName,
 	btn,
 	input_reverseSelection,
+	para_pricePrintout,
 } from './global_dom';
 import { optionsConfig } from '../motordata/base_options_list';
 import { regex, motorStandartSetter } from './global_vars';
@@ -798,7 +799,7 @@ export function setModelDescription(operationType, htmlElemRef) {
 			? optionsConfig[propName].find((data) => data.id === htmlElemRef).description
 			: optionsConfig[propName].description;
 
-		const list = areaRender.lastElementChild;
+		const list = areaRender.lastElementChild.previousElementSibling;
 
 		Array.from(list.children).forEach((child) => child.className.includes(optionsConfigPropName) && child.remove());
 
@@ -925,16 +926,14 @@ export function setModelName() {
 			? '-' +
 			  temp_arr_ws
 					.find((child) => !child.firstElementChild.getAttribute('class').includes('non-selected'))
-					.firstElementChild.getAttribute('class')
-					.split(' ')[1]
+					.firstElementChild.getAttribute('data-itemid')
 			: '';
 
 		const bearingSensorsCode = temp_arr_bs.some((child) => !child.firstElementChild.getAttribute('class').includes('non-selected'))
 			? '-' +
 			  temp_arr_bs
 					.find((child) => !child.firstElementChild.getAttribute('class').includes('non-selected'))
-					.firstElementChild.getAttribute('class')
-					.split(' ')[1]
+					.firstElementChild.getAttribute('data-itemid')
 			: '';
 
 		const ws_bs_code = (wiringSensorsCode + bearingSensorsCode)
@@ -1151,8 +1150,10 @@ export async function selectOptionsReversevely(e) {
 }
 
 //расчет стоимости:
-const motorCost = {
+export const motorCost = {
 	price: null,
+	currency: 'RUB',
+	rate: 1,
 
 	calculateCost: function (modelName, pawtype, pricelist, elements) {
 		const modelItem = Array.isArray(models.itemsList)
@@ -1169,19 +1170,25 @@ const motorCost = {
 		//console.log(this.price);
 		console.log(pricelist);
 
-		//selection array:
-		const selectionArray = [];
+		//selection array of attributes:
+		this.selectedAttributes = [];
+
+		//selection array of elements:
+		this.selectedElements = [];
 
 		elements.forEach((element) => {
 			switch (element.tagName) {
 				case 'BUTTON':
 					!element.classList.contains('btn-option-non-selected') &&
-						selectionArray.push(element.getAttribute('data-itemid').replace('Б', 'B'));
+						this.selectedAttributes.push(element.getAttribute('data-itemid').replace('Б', 'B')) &&
+						this.selectedElements.push(element);
 
 					break;
 
 				case 'INPUT':
-					element.checked && selectionArray.push(element.getAttribute('data-itemid'));
+					element.checked &&
+						this.selectedAttributes.push(element.getAttribute('data-itemid')) &&
+						this.selectedElements.push(element);
 
 					break;
 
@@ -1189,7 +1196,7 @@ const motorCost = {
 					if (element.value !== '-') {
 						//separate case for climate type selector
 						if (element.id === 'selector-climateCat') {
-							selectionArray.push(
+							this.selectedAttributes.push(
 								element.value.includes('УХЛ')
 									? Array.from(element.children)
 											.find((option) => option.selected === true)
@@ -1215,7 +1222,7 @@ const motorCost = {
 							) {
 								//means 54, 55
 								Number(document.getElementById('selector-ip').value.slice(2) <= 55) &&
-									selectionArray.push(
+									this.selectedAttributes.push(
 										Array.from(element.children)
 											.find((option) => option.selected === true)
 											.getAttribute('data-itemid') +
@@ -1223,7 +1230,7 @@ const motorCost = {
 											document.getElementById('selector-ip').value
 									);
 							} else {
-								selectionArray.push(
+								this.selectedAttributes.push(
 									Array.from(element.children)
 										.find((option) => option.selected === true)
 										.getAttribute('data-itemid')
@@ -1232,28 +1239,79 @@ const motorCost = {
 
 							//rest cases
 						} else {
-							selectionArray.push(
+							this.selectedAttributes.push(
 								Array.from(element.children)
 									.find((option) => option.selected === true)
 									.getAttribute('data-itemid')
 							);
 						}
 
+						this.selectedElements.push(Array.from(element.children).find((option) => option.selected === true));
+
 						break;
 					}
 			}
 		});
 
+		console.log(this.selectedElements);
+
+		//options prices for clients X2 (href for managers include 'manager' string):
 		this.price += Object.keys(pricelist).reduce(
-			(acc, curr) => (selectionArray.indexOf(curr) !== -1 ? (acc += Number(pricelist[curr])) : acc),
+			(acc, curr) =>
+				this.selectedAttributes.indexOf(curr) !== -1
+					? (acc += window.location.href.includes('manager') ? Number(pricelist[curr]) : Number(pricelist[curr] * 2))
+					: acc,
 			0
 		);
 
-		if (isNaN(this.price)) {
-			console.log('Цену необходимо уточнять');
+		if (!isNaN(this.price)) {
+			this.price *= this.rate;
+		}
+
+		this.printResult();
+	},
+
+	convertCurrency: async function (typeofCurrency) {
+		this.currency = typeofCurrency;
+
+		if (this.currency === 'KZT') {
+			try {
+				mask.createMask('/image/catalog/adchr/spinner.svg');
+				mask.getMaskParams();
+				const req = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+
+				mask.removeMask();
+
+				if (req.status === 200) {
+					const res = await req.json();
+					this.rate = Number(res.Valute.KZT.Value);
+					this.price *= this.rate;
+					this.printResult();
+				}
+			} catch (error) {
+				mask.removeMask();
+				console.log(error);
+				alert('Конвертация валюты в настоящий момент невозможна. Попробуйте позднее.');
+			}
 		} else {
-			console.log(this.price);
-			return this.price;
+			this.price /= this.rate;
+			this.printResult();
+			this.rate = 1;
 		}
 	},
+
+	printResult: function () {
+		if (isNaN(this.price)) {
+			para_pricePrintout.textContent = 'Стоимость необходимо уточнять.';
+		} else {
+			para_pricePrintout.innerHTML =
+				this.currency === 'RUB'
+					? `<strong> Стоимость итого: </strong>${new Intl.NumberFormat('ru-RU').format(
+							this.price.toFixed(2)
+					  )} руб., включая НДС 20%`
+					: ` <strong> Стоимость итого: </strong>${new Intl.NumberFormat('kk-KK').format(this.price.toFixed(2))} тнг.`;
+		}
+	},
+
+	expandPricelist: function () {},
 };

@@ -19,6 +19,7 @@ import {
 	setModelName,
 	selectOptionsReversevely,
 	models,
+	motorCost,
 } from './selectFunctions';
 import { optionsConfig } from '../motordata/base_options_list';
 import { mask, ls_getBtnSelectorStyle, ls_getScrollPos } from '../ui/ui';
@@ -60,6 +61,18 @@ export function globeEvHandler() {
 
 				break;
 		}
+	};
+
+	//convert currency rate:
+	btn.btn_currencyConverter.onclick = (e) => {
+		e.preventDefault();
+
+		motorCost.convertCurrency(e.target.getAttribute('data-itemid'));
+		e.target.setAttribute('data-itemid', e.target.getAttribute('data-itemid') === 'KZT' ? 'RUB' : 'KZT');
+		e.target.title = `Конвертировать в ${e.target.getAttribute('data-itemid') === 'KZT' ? 'тенге' : 'рубли'}`;
+		e.target.style.background = `url("/image/catalog/adchr/${
+			e.target.getAttribute('data-itemid') === 'KZT' ? 'kz' : 'ru'
+		}.svg") center center/cover`;
 	};
 
 	//searching for a model against input:

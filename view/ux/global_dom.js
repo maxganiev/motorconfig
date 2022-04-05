@@ -19,6 +19,9 @@ export const btn = {
 	selectorMotor_5ai: document.getElementById('btn-5ai-select'),
 	selectorMotor_din: document.getElementById('btn-din-select'),
 	btn_reverseSelection: document.getElementById('btn-reverse-selection'),
+	btn_currencyConverter: document.getElementById('btn-currency-convertor'),
+	btn_expandOffer: document.getElementById('btn-expand-offer'),
 };
 
 export const input_reverseSelection = document.getElementById('input-reverse-selection');
+export const para_pricePrintout = document.getElementById('para-price-printout');

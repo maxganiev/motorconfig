@@ -59,5 +59,4 @@ export function ls_getScrollPos() {
 export function recalculateHeight(parentElem) {
 	parentElem.style.height = Array.from(parentElem.children).reduce((acc, curr) => acc + curr.clientHeight, 0) * 1.15 + 'px';
 	main.style.height = '100%';
-	console.log(parentElem.clientHeight);
 }

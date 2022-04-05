@@ -3,8 +3,8 @@ class ControllerToolAdchrTestAdchr extends Controller
 {
 	public function index()
 	{
-		$this->document->addStyle('catalog/view/theme/default/stylesheet/tool/adchr/style.css');
 		$this->document->addScript('catalog/view/javascript/podbor/adchr/bootstap_preload/bootsrap.js');
+		$this->document->addStyle('catalog/view/theme/default/stylesheet/tool/adchr/style.css');
 		$data['footer'] = $this->load->controller('common/footer');
 		$data['header'] = $this->load->controller('common/header');
 
