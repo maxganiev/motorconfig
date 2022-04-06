@@ -21,6 +21,7 @@ export const btn = {
 	btn_reverseSelection: document.getElementById('btn-reverse-selection'),
 	btn_currencyConverter: document.getElementById('btn-currency-convertor'),
 	btn_expandOffer: document.getElementById('btn-expand-offer'),
+	btn_toPdf: document.getElementById('btn-topdf'),
 };
 
 export const input_reverseSelection = document.getElementById('input-reverse-selection');

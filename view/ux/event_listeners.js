@@ -10,6 +10,8 @@ import {
 	selectorVentSystem,
 	btn,
 	input_reverseSelection,
+	main,
+	areaRender,
 } from './global_dom';
 import {
 	searchModel,
@@ -25,6 +27,11 @@ import { optionsConfig } from '../motordata/base_options_list';
 import { mask, ls_getBtnSelectorStyle, ls_getScrollPos } from '../ui/ui';
 import { motorStandartSetter } from './global_vars';
 import { ls_keepStandardChoice, ls_keepScrollPosY } from '../storage/localStorage';
+
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import htmlToPdfmake from 'html-to-pdfmake';
 
 export function globeEvHandler() {
 	ls_getScrollPos();
@@ -73,6 +80,23 @@ export function globeEvHandler() {
 		e.target.style.background = `url("/image/catalog/adchr/${
 			e.target.getAttribute('data-itemid') === 'KZT' ? 'kz' : 'ru'
 		}.svg") center center/cover`;
+	};
+
+	//expand prices:
+	btn.btn_expandOffer.onclick = (e) => {
+		e.preventDefault();
+
+		motorCost.expandPricelist();
+	};
+
+	//convert DOM to pdf:
+	btn.btn_toPdf.onclick = async (e) => {
+		e.preventDefault();
+
+		const html = htmlToPdfmake(areaRender.innerHTML, { imagesByReference: true });
+		//html.images.img_ref_0 = '/image/catalog/engine/din/imb3.jpg';
+		console.log(html);
+		pdfMake.createPdf({ content: html.content, images: html.images }).open();
 	};
 
 	//searching for a model against input:
@@ -301,6 +325,11 @@ export function globeEvHandler() {
 				);
 			}
 			getOptions(null);
+		}
+
+		//hide pricelist if expanded:
+		if (e.target.id === 'icn-close-pricelist') {
+			e.target.parentElement.parentElement.remove();
 		}
 	});
 

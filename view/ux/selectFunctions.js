@@ -17,6 +17,7 @@ import {
 	btn,
 	input_reverseSelection,
 	para_pricePrintout,
+	main,
 } from './global_dom';
 import { optionsConfig } from '../motordata/base_options_list';
 import { regex, motorStandartSetter } from './global_vars';
@@ -47,7 +48,7 @@ export const models = {
 				});
 
 				const res = await req.json();
-				console.log(res);
+				//console.log(res);
 
 				this.itemsList = res;
 				mask.removeMask();
@@ -84,7 +85,7 @@ export const models = {
 				});
 
 				const res = await req.json();
-				console.log(res);
+				//console.log(res);
 				this.itemsList = res;
 				mask.removeMask();
 			} catch (error) {
@@ -1154,58 +1155,76 @@ export const motorCost = {
 	price: null,
 	currency: 'RUB',
 	rate: 1,
+	currentType: null,
+	pricelist: null,
 
 	calculateCost: function (modelName, pawtype, pricelist, elements) {
+		this.pricelist = pricelist;
+
 		const modelItem = Array.isArray(models.itemsList)
 			? models.itemsList.filter((model) => model.model === modelName)[0]
 			: models.itemsList;
 
-		const currentType = modelItem.rel_offers.filter(
+		this.currentType = modelItem.rel_offers.filter(
 			(offer) => offer.model.slice(offer.model.lastIndexOf(' ')).trim() === pawtype
 		)[0];
 
-		console.log(currentType);
-		this.price = selectorBrakes.value === '-' ? Number(currentType.price) : Number(currentType.brake.price);
+		//console.log(this.currentType);
 
-		//console.log(this.price);
-		console.log(pricelist);
+		//some prices are missed atm, handle them separately:
+		if (Number(this.currentType.price) - 1 < 0 || Number(this.currentType.brake.price) < 1) {
+			para_pricePrintout.textContent = 'Стоимость необходимо уточнять.';
+			btn.btn_expandOffer.style.visibility = 'hidden';
+			return;
+		}
 
-		//selection array of attributes:
-		this.selectedAttributes = [];
+		this.price = selectorBrakes.value === '-' ? Number(this.currentType.price) : Number(this.currentType.brake.price);
+		btn.btn_expandOffer.style.visibility = 'visible';
 
-		//selection array of elements:
-		this.selectedElements = [];
+		//console.log(this.pricelist);
+
+		//selection array of HTML elements and their data-attributes:
+		this.selectedItems = [];
 
 		elements.forEach((element) => {
 			switch (element.tagName) {
 				case 'BUTTON':
 					!element.classList.contains('btn-option-non-selected') &&
-						this.selectedAttributes.push(element.getAttribute('data-itemid').replace('Б', 'B')) &&
-						this.selectedElements.push(element);
+						this.selectedItems.push({
+							element,
+							dataAttr: element.getAttribute('data-itemid').replace('Б', 'B'),
+						});
 
 					break;
 
 				case 'INPUT':
-					element.checked &&
-						this.selectedAttributes.push(element.getAttribute('data-itemid')) &&
-						this.selectedElements.push(element);
-
+					element.checked && this.selectedItems.push({ element, dataAttr: element.getAttribute('data-itemid') });
 					break;
 
 				case 'SELECT':
 					if (element.value !== '-') {
 						//separate case for climate type selector
 						if (element.id === 'selector-climateCat') {
-							this.selectedAttributes.push(
+							this.selectedItems.push(
 								element.value.includes('УХЛ')
-									? Array.from(element.children)
-											.find((option) => option.selected === true)
-											.getAttribute('data-itemid')
-											.replace('УХЛ', 'UHL')
-									: Array.from(element.children)
-											.find((option) => option.selected === true)
-											.getAttribute('data-itemid')
-											.replace('У', 'U')
+									? {
+											element: Array.from(element.children).find(
+												(option) => option.selected === true
+											),
+											dataAttr: Array.from(element.children)
+												.find((option) => option.selected === true)
+												.getAttribute('data-itemid')
+												.replace('УХЛ', 'UHL'),
+									  }
+									: {
+											element: Array.from(element.children).find(
+												(option) => option.selected === true
+											),
+											dataAttr: Array.from(element.children)
+												.find((option) => option.selected === true)
+												.getAttribute('data-itemid')
+												.replace('У', 'U'),
+									  }
 							);
 						}
 
@@ -1222,43 +1241,47 @@ export const motorCost = {
 							) {
 								//means 54, 55
 								Number(document.getElementById('selector-ip').value.slice(2) <= 55) &&
-									this.selectedAttributes.push(
-										Array.from(element.children)
-											.find((option) => option.selected === true)
-											.getAttribute('data-itemid') +
+									this.selectedItems.push({
+										element: Array.from(element.children).find(
+											(option) => option.selected === true
+										),
+										dataAttr:
+											Array.from(element.children)
+												.find((option) => option.selected === true)
+												.getAttribute('data-itemid') +
 											'_' +
-											document.getElementById('selector-ip').value
-									);
+											document.getElementById('selector-ip').value,
+									});
 							} else {
-								this.selectedAttributes.push(
-									Array.from(element.children)
+								this.selectedItems.push({
+									element: Array.from(element.children).find((option) => option.selected === true),
+									dataAttr: Array.from(element.children)
 										.find((option) => option.selected === true)
-										.getAttribute('data-itemid')
-								);
+										.getAttribute('data-itemid'),
+								});
 							}
 
 							//rest cases
 						} else {
-							this.selectedAttributes.push(
-								Array.from(element.children)
+							this.selectedItems.push({
+								element: Array.from(element.children).find((option) => option.selected === true),
+								dataAttr: Array.from(element.children)
 									.find((option) => option.selected === true)
-									.getAttribute('data-itemid')
-							);
+									.getAttribute('data-itemid'),
+							});
 						}
-
-						this.selectedElements.push(Array.from(element.children).find((option) => option.selected === true));
 
 						break;
 					}
 			}
 		});
 
-		console.log(this.selectedElements);
+		//console.log(this.selectedItems);
 
 		//options prices for clients X2 (href for managers include 'manager' string):
-		this.price += Object.keys(pricelist).reduce(
+		this.price += Object.keys(this.pricelist).reduce(
 			(acc, curr) =>
-				this.selectedAttributes.indexOf(curr) !== -1
+				this.selectedItems.findIndex((attr) => attr.dataAttr === curr) !== -1
 					? (acc += window.location.href.includes('manager') ? Number(pricelist[curr]) : Number(pricelist[curr] * 2))
 					: acc,
 			0
@@ -1303,6 +1326,7 @@ export const motorCost = {
 	printResult: function () {
 		if (isNaN(this.price)) {
 			para_pricePrintout.textContent = 'Стоимость необходимо уточнять.';
+			btn.btn_expandOffer.style.visibility = 'hidden';
 		} else {
 			para_pricePrintout.innerHTML =
 				this.currency === 'RUB'
@@ -1310,8 +1334,55 @@ export const motorCost = {
 							this.price.toFixed(2)
 					  )} руб., включая НДС 20%`
 					: ` <strong> Стоимость итого: </strong>${new Intl.NumberFormat('kk-KK').format(this.price.toFixed(2))} тнг.`;
+
+			btn.btn_expandOffer.style.visibility = 'visible';
 		}
 	},
 
-	expandPricelist: function () {},
+	expandPricelist: function () {
+		while (main.firstElementChild.id === 'list-pricelist-expanded') {
+			main.firstElementChild.remove();
+		}
+
+		const list_pricelistExpanded = document.createElement('ul');
+		list_pricelistExpanded.classList.add('list', 'list-pricelist-expanded');
+		list_pricelistExpanded.id = 'list-pricelist-expanded';
+
+		list_pricelistExpanded.innerHTML = `
+		<li> <img src="/image/catalog/adchr/times-solid-black.svg" alt="close icon" id="icn-close-pricelist" /> </li>
+		<li> ${
+			selectorBrakes.value !== '-'
+				? `Электродвигатель <strong> ${selectorModel.value} </strong>  и <strong> т${selectorBrakes.value.slice(
+						1
+				  )} </strong> : ${new Intl.NumberFormat('ru-RU').format((this.currentType.brake.price * this.rate).toFixed(2))} ${
+						this.currency === 'RUB' ? 'руб.' : 'тнг.'
+				  }`
+				: `Электродвигатель <strong> ${selectorModel.value} </strong> : ${(this.currentType.price * this.rate).toFixed(
+						2
+				  )} ${this.currency === 'RUB' ? 'руб.' : 'тнг.'}`
+		}</li>
+	
+		${this.selectedItems
+			.map((item) => {
+				const { element, dataAttr } = item;
+				const price = window.location.href.includes('manager')
+					? this.pricelist[dataAttr] * this.rate
+					: this.pricelist[dataAttr] * this.rate * 2;
+
+				return `<li> ${
+					element.tagName === 'BUTTON'
+						? `${
+								element.parentElement.parentElement.firstChild.nodeValue
+						  } <strong> (${element.innerText.toLowerCase()}) </strong>`
+						: element.tagName === 'OPTION'
+						? `${element.parentElement.labels[0].innerText} <strong> (${element.innerText}) </strong>`
+						: `${element.labels[0].innerText} <strong> ${element.getAttribute('data-itemid')} </strong>`
+				} : ${new Intl.NumberFormat('ru-RU').format(price.toFixed(2))} ${this.currency === 'RUB' ? 'руб.' : 'тнг'} </li>`;
+			})
+			.join('')}
+		
+		`;
+
+		main.insertAdjacentElement('afterbegin', list_pricelistExpanded);
+	},
 };

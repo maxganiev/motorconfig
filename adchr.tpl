@@ -124,7 +124,8 @@
 				<ul class="list-pricedata">
 					<li> 	<p id="para-price-printout" class="para-price-printout"> </p> </li>
 					<li> <a href="#" class="btn btn-sm btn-currency-convertor" id="btn-currency-convertor" title="Конвертировать в тенге" data-itemid="KZT"> </a> </li>
-					<li>  <a href="#" class="btn btn-sm btn-expand-offer" id="btn-expand-offer"> Показать цены на комплектующие </a> </li>
+					<li>  <a href="#" class="btn btn-sm btn-expand-offer" id="btn-expand-offer"> Узнать, что включено в стоимость </a> </li>
+					<li>  <a href="#" class="btn btn-sm btn-topdf" id="btn-topdf" title="Сохранить файл в pdf"></a> </li>
 				 </ul>
 			</section>
 		</main>
