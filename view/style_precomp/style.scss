@@ -80,6 +80,21 @@ select {
 }
 
 ////service classes:
+.alert {
+	position: absolute !important;
+	width: 100% !important;
+	display: flex !important;
+	justify-content: center;
+	transform: translateY(-30%);
+	animation-name: animate-alert;
+	animation-duration: 0.4s;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+	animation-direction: normal;
+	animation-timing-function: ease-in;
+	font-size: $fs-mid;
+	z-index: 20;
+}
 
 .form-control {
 	width: 80% !important;
@@ -432,5 +447,15 @@ body {
 	}
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+@keyframes animate-alert {
+	from {
+		transform: translateY(-100%);
+	}
+
+	to {
+		transform: translateY(0%);
 	}
 }

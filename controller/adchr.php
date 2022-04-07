@@ -43,4 +43,14 @@ class ControllerToolAdchrTestAdchr extends Controller
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
+
+	//proxying blob:
+	public function proxy_blob()
+	{
+		$this->load->model('tool/adchr/test/adchr');
+
+		$res = $this->model_tool_adchr_test_adchr->proxy_blob($this->request->post['src']);
+		$this->response->addHeader('Content-Type: image/jpeg');
+		$this->response->setOutput($res);
+	}
 }

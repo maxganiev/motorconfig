@@ -10,8 +10,6 @@ import {
 	selectorVentSystem,
 	btn,
 	input_reverseSelection,
-	main,
-	areaRender,
 } from './global_dom';
 import {
 	searchModel,
@@ -22,19 +20,15 @@ import {
 	selectOptionsReversevely,
 	models,
 	motorCost,
+	toPdf,
 } from './selectFunctions';
 import { optionsConfig } from '../motordata/base_options_list';
-import { mask, ls_getBtnSelectorStyle, ls_getScrollPos } from '../ui/ui';
+import { mask, ls_getBtnSelectorStyle } from '../ui/ui';
 import { motorStandartSetter } from './global_vars';
-import { ls_keepStandardChoice, ls_keepScrollPosY } from '../storage/localStorage';
-
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
-import htmlToPdfmake from 'html-to-pdfmake';
+import { ls_keepStandardChoice } from '../storage/localStorage';
+import { setAlert } from './alert';
 
 export function globeEvHandler() {
-	ls_getScrollPos();
 	ls_getBtnSelectorStyle();
 
 	//selecting motor standard:
@@ -90,13 +84,9 @@ export function globeEvHandler() {
 	};
 
 	//convert DOM to pdf:
-	btn.btn_toPdf.onclick = async (e) => {
+	btn.btn_toPdf.onclick = (e) => {
 		e.preventDefault();
-
-		const html = htmlToPdfmake(areaRender.innerHTML, { imagesByReference: true });
-		//html.images.img_ref_0 = '/image/catalog/engine/din/imb3.jpg';
-		console.log(html);
-		pdfMake.createPdf({ content: html.content, images: html.images }).open();
+		toPdf();
 	};
 
 	//searching for a model against input:
@@ -107,7 +97,7 @@ export function globeEvHandler() {
 
 		setTimeout(() => {
 			searchModel(e);
-		}, 600);
+		}, 700);
 	};
 
 	//searching for a specific model agains choice of rpm or voltage:
@@ -355,7 +345,8 @@ export function globeEvHandler() {
 		) {
 			mask.createMask('/image/catalog/adchr/ban.svg');
 			mask.getMaskParams();
-			alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+
+			setAlert('err-fillDetails', 'Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
 		} else {
 			const modelName =
 				motorStandartSetter.selected === '5AI'
@@ -395,7 +386,7 @@ export function globeEvHandler() {
 				}
 				return true;
 			} else {
-				alert('Only copy paste allowed!');
+				setAlert('err-fillDetails', 'Разрешены только копирование и вставка!');
 				e.preventDefault();
 				e.target.blur();
 			}
@@ -405,6 +396,4 @@ export function globeEvHandler() {
 	window.onresize = () => {
 		mask.mask !== undefined && typeof mask.mask !== 'undefined' && mask.getMaskParams();
 	};
-
-	window.onbeforeunload = () => ls_keepScrollPosY(document.documentElement.scrollTop);
 }

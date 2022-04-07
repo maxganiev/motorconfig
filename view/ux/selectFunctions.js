@@ -24,6 +24,11 @@ import { regex, motorStandartSetter } from './global_vars';
 import { imgSrcData, setImgSrcData } from '../motordata/imgSrcData';
 import { fillExtraOptions, showWarning } from '../motordata/extra_options_list';
 import { setTransforms, mask, recalculateHeight } from '../ui/ui';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import htmlToPdfmake from 'html-to-pdfmake';
+import { setAlert } from './alert';
 
 //поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
 export const models = {
@@ -56,7 +61,7 @@ export const models = {
 				if (this.itemsList.length === 0) {
 					mask.createMask('/image/catalog/adchr/ban.svg');
 					mask.getMaskParams();
-					alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+					setAlert('err-fillDetails', 'Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
 				}
 			} catch (error) {
 				console.log(error);
@@ -489,7 +494,11 @@ export async function getOptions(selectorsId, operationType) {
 			mask.createMask('/image/catalog/adchr/ban.svg');
 			mask.getMaskParams();
 			console.log(error);
-			alert('Smth is broken...');
+			// setAlert(
+			// 	'err-fillDetails',
+			// 	'Возникли неполадки. Попробуйте перезагрузить страницу, если проблема повторится - проверьте ввод',
+			// 	4000
+			// );
 		}
 
 		//resetting checkboxes:
@@ -995,12 +1004,13 @@ export function setModelName() {
 
 		//обновление наименования при выборе опций селекторов:
 		function updateModelNameForSelect(parentSelector) {
-			name += !Array.from(parentSelector.children).some((child) => child.selected && child.innerText === '-')
-				? '-' +
-				  Array.from(parentSelector.children)
-						.find((child) => child.selected === true)
-						.getAttribute('data-itemid')
-				: '';
+			if (parentSelector.children.length > 0)
+				name += !Array.from(parentSelector.children).some((child) => child.selected && child.innerText === '-')
+					? '-' +
+					  Array.from(parentSelector.children)
+							.find((child) => child.selected === true)
+							.getAttribute('data-itemid')
+					: '';
 		}
 	}, 10);
 }
@@ -1145,20 +1155,20 @@ export async function selectOptionsReversevely(e) {
 		mask.createMask('/image/catalog/adchr/ban.svg');
 		mask.getMaskParams();
 		e.target.disabled = false;
-		alert('Введено что-то не то');
+		setAlert('err-fillDetails', 'Пожалуйста, проверьте введенные данные');
 		console.log(err);
 	}
 }
 
 //расчет стоимости:
 export const motorCost = {
-	price: null,
 	currency: 'RUB',
 	rate: 1,
 	currentType: null,
 	pricelist: null,
 
 	calculateCost: function (modelName, pawtype, pricelist, elements) {
+		this.price = null;
 		this.pricelist = pricelist;
 
 		const modelItem = Array.isArray(models.itemsList)
@@ -1314,7 +1324,7 @@ export const motorCost = {
 			} catch (error) {
 				mask.removeMask();
 				console.log(error);
-				alert('Конвертация валюты в настоящий момент невозможна. Попробуйте позднее.');
+				setAlert('err-fillDetails', 'Конвертация валюты в настоящий момент невозможна. Попробуйте позднее.');
 			}
 		} else {
 			this.price /= this.rate;
@@ -1386,3 +1396,187 @@ export const motorCost = {
 		main.insertAdjacentElement('afterbegin', list_pricelistExpanded);
 	},
 };
+
+//конвертация DOM в PDF и загрузка файла:
+export async function toPdf() {
+	const img = Array.from(areaRender.children).find((child) => child.tagName === 'IMG');
+	const logo_url = await getBase64FromUrl('/image/catalog/adchr/logo_header.png');
+
+	//pdfmake lib needs url to be 64-based encoded thus have it converted:
+	async function getBase64FromUrl(url) {
+		const request = await fetch(url);
+		const blob = await request.blob();
+		return new Promise((resolve) => {
+			const reader = new FileReader();
+			reader.readAsDataURL(blob);
+			reader.onloadend = () => {
+				const base64data = reader.result;
+				resolve(base64data);
+			};
+		});
+	}
+
+	//prevent unnecessary call if img url has already been converted:
+	if (img.src.includes('data')) {
+		getPdf();
+		return;
+	}
+	try {
+		//workaround to bypass CORS (proxyfying image request via backend):
+		const data = new FormData();
+		data.append('src', img.src);
+
+		const req = await fetch('/index.php?route=tool/adchr/test/adchr/proxy_blob', {
+			method: 'POST',
+			body: data,
+		});
+
+		const res = await req.blob();
+
+		//get workable link for blob:
+		const objectURL = URL.createObjectURL(res);
+		const url = await getBase64FromUrl(objectURL);
+		//reassing img url with 64-based encoded (now OK to supply to pdfmake):
+		img.src = url;
+		getPdf();
+	} catch (error) {
+		console.log(error);
+	}
+
+	function getPdf() {
+		const toParse = `
+		<img src="${logo_url}" style="width: 250px"; />
+		<span style="color: #f46b25; font-size: 14px; margin-top: 15px";> Контактный телефон: +7 (812) 320-88-81 </span>
+		<h2> ${
+			selectorBrakes.value !== '-'
+				? `Электродвигатель с тормозом ${document.getElementById('model-name').textContent}`
+				: `Электродвигатель ${document.getElementById('model-name').textContent}`
+		} </h2>
+
+		<img src="${img.src}" style="width: 500px; margin-top: 20px"; />
+
+		<h3> ${Array.from(areaRender.children).find((child) => child.tagName === 'H3').textContent} </h3>
+
+	
+		${chart_connectionParams.innerHTML}
+
+		<p> Комплектация: </p>
+		<ul class="list">
+		${Array.from(document.getElementsByClassName('chart-description')[0].children)
+			.map((element, index, array) => (index !== array.length - 1 ? `<li> ${element.innerText} </li>` : null))
+			.join('')}
+		</ul>
+
+		${listItemUpgrades.children.length !== 0 ? '<p> Технические характеристики: </p>' : ''}
+		${
+			listItemUpgrades.children.length !== 0
+				? Array.from(listItemUpgrades.children)
+						.map(
+							(child) => `
+		<ul>
+		${Array.from(child.children)
+			.map((listItem) => `<li> ${listItem.innerText} </li>`)
+			.join('')}
+		</ul>
+		`
+						)
+						.join('')
+				: ''
+		}
+
+		${
+			motorCost.price !== null && !isNaN(motorCost.price)
+				? `<p> Стоимость комплектации: </p> 
+		<ul class="list">
+		<li> ${
+			selectorBrakes.value !== '-'
+				? `Электродвигатель <strong> ${selectorModel.value} </strong>  и <strong> т${selectorBrakes.value.slice(
+						1
+				  )} </strong>: ${new Intl.NumberFormat('ru-RU').format(
+						(motorCost.currentType.brake.price * motorCost.rate).toFixed(2)
+				  )} ${motorCost.currency === 'RUB' ? 'руб.' : 'тнг.'}`
+				: `Электродвигатель <strong> ${selectorModel.value} </strong> : ${(
+						motorCost.currentType.price * motorCost.rate
+				  ).toFixed(2)} ${motorCost.currency === 'RUB' ? 'руб.' : 'тнг.'}`
+		}</li>
+	
+		${motorCost.selectedItems
+			.map((item) => {
+				const { element, dataAttr } = item;
+				const price = window.location.href.includes('manager')
+					? motorCost.pricelist[dataAttr] * motorCost.rate
+					: motorCost.pricelist[dataAttr] * motorCost.rate * 2;
+
+				return `<li> ${
+					element.tagName === 'BUTTON'
+						? `${
+								element.parentElement.parentElement.firstChild.nodeValue
+						  } <strong> (${element.innerText.toLowerCase()}) </strong>`
+						: element.tagName === 'OPTION'
+						? `${element.parentElement.labels[0].innerText} <strong> (${element.innerText}) </strong>`
+						: `${element.labels[0].innerText} <strong> ${element.getAttribute('data-itemid')} </strong>`
+				}: ${new Intl.NumberFormat('ru-RU').format(price.toFixed(2))} ${
+					motorCost.currency === 'RUB' ? 'руб.' : 'тнг'
+				} </li>`;
+			})
+			.join('')}
+		</ul>
+
+		<p style="margin-top: 60px";> ${para_pricePrintout.textContent} <p>`
+				: ''
+		}
+
+		`;
+		console.log(motorCost.price);
+		//calc table dims:
+		const tableDims = {
+			width: chart_connectionParams.offsetWidth,
+			margin:
+				parseFloat(window.getComputedStyle(chart_connectionParams).marginLeft) +
+				parseFloat(window.getComputedStyle(chart_connectionParams).marginRight),
+			padding:
+				parseFloat(window.getComputedStyle(chart_connectionParams).paddingLeft) +
+				parseFloat(window.getComputedStyle(chart_connectionParams).paddingRight),
+			border:
+				parseFloat(window.getComputedStyle(chart_connectionParams).borderLeftWidth) +
+				parseFloat(window.getComputedStyle(chart_connectionParams).borderRightWidth),
+
+			getTotal: function () {
+				this.total = Object.keys(this)
+					.filter((prop) => typeof this[prop] !== 'function')
+					.reduce((acc, curr) => acc + this[curr], 0);
+			},
+		};
+
+		tableDims.getTotal();
+
+		const html = htmlToPdfmake(toParse, {
+			defaultStyles: {
+				font: 'Montserrat',
+				h2: { alignment: 'center', fontSize: 14, marginTop: 40 },
+				h3: { alignment: 'center', fontSize: 12, marginTop: 20 },
+				table: {
+					alignment: 'center',
+					fontSize: 10,
+					tableAutoSize: true,
+					marginTop: 10,
+					marginLeft: (areaRender.clientWidth - tableDims.total) / 2,
+				},
+				ul: { listType: 'none', fontSize: 9 },
+				p: { alignment: 'center', fontSize: 10, bold: true },
+				li: { lineHeight: 1.2 },
+			},
+			imagesByReference: true,
+		});
+
+		pdfMake
+			.createPdf({
+				content: html.content,
+				images: html.images,
+				styles: {
+					list: { background: '#eee' },
+				},
+			})
+			.open();
+	}
+}

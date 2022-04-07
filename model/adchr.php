@@ -381,4 +381,10 @@ class ModelToolAdchrTestAdchr extends Model
 
 		return $arg;
 	}
+
+	public function proxy_blob($src)
+	{
+		$res = readfile($src);
+		return $res;
+	}
 }

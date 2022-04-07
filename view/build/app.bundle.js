@@ -3499,7 +3499,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.mask = undefined;
 exports.setTransforms = setTransforms;
 exports.ls_getBtnSelectorStyle = ls_getBtnSelectorStyle;
-exports.ls_getScrollPos = ls_getScrollPos;
 exports.recalculateHeight = recalculateHeight;
 
 var _global_dom = __webpack_require__(66);
@@ -3547,16 +3546,6 @@ function ls_getBtnSelectorStyle() {
 			selectorMotor_5ai.classList.replace('btn-option-selected', 'btn-option-non-selected');
 			_global_dom.checkboxConicShaft.parentElement.style.display = 'none';
 			break;
-	}
-}
-
-function ls_getScrollPos() {
-	if (localStorage.getItem('scrollPosY') === null) {
-		return;
-	} else {
-		setTimeout(function () {
-			window.scrollTo(0, localStorage.getItem('scrollPosY'));
-		}, 10);
 	}
 }
 
@@ -4576,7 +4565,7 @@ module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh)
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.motorCost = exports.selectOptionsReversevely = exports.getOptions = exports.optionsSelector = exports.models = undefined;
+exports.toPdf = exports.motorCost = exports.selectOptionsReversevely = exports.getOptions = exports.optionsSelector = exports.models = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -4589,7 +4578,7 @@ var getOptions = exports.getOptions = function () {
 				switch (_context2.prev = _context2.next) {
 					case 0:
 						if (!(_global_dom.selectorModel.value !== '-')) {
-							_context2.next = 40;
+							_context2.next = 39;
 							break;
 						}
 
@@ -4679,7 +4668,7 @@ var getOptions = exports.getOptions = function () {
 						fillUpgradesChart();
 						setModelName();
 						_ui.mask.removeMask();
-						_context2.next = 35;
+						_context2.next = 34;
 						break;
 
 					case 29:
@@ -4689,9 +4678,13 @@ var getOptions = exports.getOptions = function () {
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
 						console.log(_context2.t0);
-						alert('Smth is broken...');
+						// setAlert(
+						// 	'err-fillDetails',
+						// 	'Возникли неполадки. Попробуйте перезагрузить страницу, если проблема повторится - проверьте ввод',
+						// 	4000
+						// );
 
-					case 35:
+					case 34:
 
 						//resetting checkboxes:
 						_global_dom.checkboxEncoder.disabled = !_base_options_list.optionsConfig.encoderIsDisabled;
@@ -4704,7 +4697,7 @@ var getOptions = exports.getOptions = function () {
 
 						setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValue, conicShaftIsChecked, pawType);
 
-					case 40:
+					case 39:
 					case 'end':
 						return _context2.stop();
 				}
@@ -4856,7 +4849,7 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 						_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 						_ui.mask.getMaskParams();
 						e.target.disabled = false;
-						alert('Введено что-то не то');
+						(0, _alert.setAlert)('err-fillDetails', 'Пожалуйста, проверьте введенные данные');
 						console.log(_context3.t0);
 
 					case 20:
@@ -4874,6 +4867,197 @@ var selectOptionsReversevely = exports.selectOptionsReversevely = function () {
 
 //расчет стоимости:
 
+
+//конвертация DOM в PDF и загрузка файла:
+var toPdf = exports.toPdf = function () {
+	var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
+
+		//pdfmake lib needs url to be 64-based encoded thus have it converted:
+		var getBase64FromUrl = function () {
+			var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(url) {
+				var request, blob;
+				return regeneratorRuntime.wrap(function _callee5$(_context5) {
+					while (1) {
+						switch (_context5.prev = _context5.next) {
+							case 0:
+								_context5.next = 2;
+								return fetch(url);
+
+							case 2:
+								request = _context5.sent;
+								_context5.next = 5;
+								return request.blob();
+
+							case 5:
+								blob = _context5.sent;
+								return _context5.abrupt('return', new Promise(function (resolve) {
+									var reader = new FileReader();
+									reader.readAsDataURL(blob);
+									reader.onloadend = function () {
+										var base64data = reader.result;
+										resolve(base64data);
+									};
+								}));
+
+							case 7:
+							case 'end':
+								return _context5.stop();
+						}
+					}
+				}, _callee5, this);
+			}));
+
+			return function getBase64FromUrl(_x6) {
+				return _ref7.apply(this, arguments);
+			};
+		}();
+
+		//prevent unnecessary call if img url has already been converted:
+
+
+		var img, logo_url, data, req, res, objectURL, url, getPdf;
+		return regeneratorRuntime.wrap(function _callee6$(_context6) {
+			while (1) {
+				switch (_context6.prev = _context6.next) {
+					case 0:
+						getPdf = function getPdf() {
+							var toParse = '\n\t\t<img src="' + logo_url + '" style="width: 250px"; />\n\t\t<span style="color: #f46b25; font-size: 14px; margin-top: 15px";> \u041A\u043E\u043D\u0442\u0430\u043A\u0442\u043D\u044B\u0439 \u0442\u0435\u043B\u0435\u0444\u043E\u043D: +7 (812) 320-88-81 </span>\n\t\t<h2> ' + (_global_dom.selectorBrakes.value !== '-' ? '\u042D\u043B\u0435\u043A\u0442\u0440\u043E\u0434\u0432\u0438\u0433\u0430\u0442\u0435\u043B\u044C \u0441 \u0442\u043E\u0440\u043C\u043E\u0437\u043E\u043C ' + document.getElementById('model-name').textContent : '\u042D\u043B\u0435\u043A\u0442\u0440\u043E\u0434\u0432\u0438\u0433\u0430\u0442\u0435\u043B\u044C ' + document.getElementById('model-name').textContent) + ' </h2>\n\n\t\t<img src="' + img.src + '" style="width: 500px; margin-top: 20px"; />\n\n\t\t<h3> ' + Array.from(_global_dom.areaRender.children).find(function (child) {
+								return child.tagName === 'H3';
+							}).textContent + ' </h3>\n\n\t\n\t\t' + _global_dom.chart_connectionParams.innerHTML + '\n\n\t\t<p> \u041A\u043E\u043C\u043F\u043B\u0435\u043A\u0442\u0430\u0446\u0438\u044F: </p>\n\t\t<ul class="list">\n\t\t' + Array.from(document.getElementsByClassName('chart-description')[0].children).map(function (element, index, array) {
+								return index !== array.length - 1 ? '<li> ' + element.innerText + ' </li>' : null;
+							}).join('') + '\n\t\t</ul>\n\n\t\t' + (_global_dom.listItemUpgrades.children.length !== 0 ? '<p> Технические характеристики: </p>' : '') + '\n\t\t' + (_global_dom.listItemUpgrades.children.length !== 0 ? Array.from(_global_dom.listItemUpgrades.children).map(function (child) {
+								return '\n\t\t<ul>\n\t\t' + Array.from(child.children).map(function (listItem) {
+									return '<li> ' + listItem.innerText + ' </li>';
+								}).join('') + '\n\t\t</ul>\n\t\t';
+							}).join('') : '') + '\n\n\t\t' + (motorCost.price !== null && !isNaN(motorCost.price) ? '<p> \u0421\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C \u043A\u043E\u043C\u043F\u043B\u0435\u043A\u0442\u0430\u0446\u0438\u0438: </p> \n\t\t<ul class="list">\n\t\t<li> ' + (_global_dom.selectorBrakes.value !== '-' ? '\u042D\u043B\u0435\u043A\u0442\u0440\u043E\u0434\u0432\u0438\u0433\u0430\u0442\u0435\u043B\u044C <strong> ' + _global_dom.selectorModel.value + ' </strong>  \u0438 <strong> \u0442' + _global_dom.selectorBrakes.value.slice(1) + ' </strong>: ' + new Intl.NumberFormat('ru-RU').format((motorCost.currentType.brake.price * motorCost.rate).toFixed(2)) + ' ' + (motorCost.currency === 'RUB' ? 'руб.' : 'тнг.') : '\u042D\u043B\u0435\u043A\u0442\u0440\u043E\u0434\u0432\u0438\u0433\u0430\u0442\u0435\u043B\u044C <strong> ' + _global_dom.selectorModel.value + ' </strong> : ' + (motorCost.currentType.price * motorCost.rate).toFixed(2) + ' ' + (motorCost.currency === 'RUB' ? 'руб.' : 'тнг.')) + '</li>\n\t\n\t\t' + motorCost.selectedItems.map(function (item) {
+								var element = item.element,
+								    dataAttr = item.dataAttr;
+
+								var price = window.location.href.includes('manager') ? motorCost.pricelist[dataAttr] * motorCost.rate : motorCost.pricelist[dataAttr] * motorCost.rate * 2;
+
+								return '<li> ' + (element.tagName === 'BUTTON' ? element.parentElement.parentElement.firstChild.nodeValue + ' <strong> (' + element.innerText.toLowerCase() + ') </strong>' : element.tagName === 'OPTION' ? element.parentElement.labels[0].innerText + ' <strong> (' + element.innerText + ') </strong>' : element.labels[0].innerText + ' <strong> ' + element.getAttribute('data-itemid') + ' </strong>') + ': ' + new Intl.NumberFormat('ru-RU').format(price.toFixed(2)) + ' ' + (motorCost.currency === 'RUB' ? 'руб.' : 'тнг') + ' </li>';
+							}).join('') + '\n\t\t</ul>\n\n\t\t<p style="margin-top: 60px";> ' + _global_dom.para_pricePrintout.textContent + ' <p>' : '') + '\n\n\t\t';
+							console.log(motorCost.price);
+							//calc table dims:
+							var tableDims = {
+								width: _global_dom.chart_connectionParams.offsetWidth,
+								margin: parseFloat(window.getComputedStyle(_global_dom.chart_connectionParams).marginLeft) + parseFloat(window.getComputedStyle(_global_dom.chart_connectionParams).marginRight),
+								padding: parseFloat(window.getComputedStyle(_global_dom.chart_connectionParams).paddingLeft) + parseFloat(window.getComputedStyle(_global_dom.chart_connectionParams).paddingRight),
+								border: parseFloat(window.getComputedStyle(_global_dom.chart_connectionParams).borderLeftWidth) + parseFloat(window.getComputedStyle(_global_dom.chart_connectionParams).borderRightWidth),
+
+								getTotal: function getTotal() {
+									var _this4 = this;
+
+									this.total = Object.keys(this).filter(function (prop) {
+										return typeof _this4[prop] !== 'function';
+									}).reduce(function (acc, curr) {
+										return acc + _this4[curr];
+									}, 0);
+								}
+							};
+
+							tableDims.getTotal();
+
+							var html = (0, _htmlToPdfmake2.default)(toParse, {
+								defaultStyles: {
+									font: 'Montserrat',
+									h2: { alignment: 'center', fontSize: 14, marginTop: 40 },
+									h3: { alignment: 'center', fontSize: 12, marginTop: 20 },
+									table: {
+										alignment: 'center',
+										fontSize: 10,
+										tableAutoSize: true,
+										marginTop: 10,
+										marginLeft: (_global_dom.areaRender.clientWidth - tableDims.total) / 2
+									},
+									ul: { listType: 'none', fontSize: 9 },
+									p: { alignment: 'center', fontSize: 10, bold: true },
+									li: { lineHeight: 1.2 }
+								},
+								imagesByReference: true
+							});
+
+							_pdfmake2.default.createPdf({
+								content: html.content,
+								images: html.images,
+								styles: {
+									list: { background: '#eee' }
+								}
+							}).open();
+						};
+
+						img = Array.from(_global_dom.areaRender.children).find(function (child) {
+							return child.tagName === 'IMG';
+						});
+						_context6.next = 4;
+						return getBase64FromUrl('/image/catalog/adchr/logo_header.png');
+
+					case 4:
+						logo_url = _context6.sent;
+
+						if (!img.src.includes('data')) {
+							_context6.next = 8;
+							break;
+						}
+
+						getPdf();
+						return _context6.abrupt('return');
+
+					case 8:
+						_context6.prev = 8;
+
+						//workaround to bypass CORS (proxyfying image request via backend):
+						data = new FormData();
+
+						data.append('src', img.src);
+
+						_context6.next = 13;
+						return fetch('/index.php?route=tool/adchr/test/adchr/proxy_blob', {
+							method: 'POST',
+							body: data
+						});
+
+					case 13:
+						req = _context6.sent;
+						_context6.next = 16;
+						return req.blob();
+
+					case 16:
+						res = _context6.sent;
+
+
+						//get workable link for blob:
+						objectURL = URL.createObjectURL(res);
+						_context6.next = 20;
+						return getBase64FromUrl(objectURL);
+
+					case 20:
+						url = _context6.sent;
+
+						//reassing img url with 64-based encoded (now OK to supply to pdfmake):
+						img.src = url;
+						getPdf();
+						_context6.next = 28;
+						break;
+
+					case 25:
+						_context6.prev = 25;
+						_context6.t0 = _context6['catch'](8);
+
+						console.log(_context6.t0);
+
+					case 28:
+					case 'end':
+						return _context6.stop();
+				}
+			}
+		}, _callee6, this, [[8, 25]]);
+	}));
+
+	return function toPdf() {
+		return _ref6.apply(this, arguments);
+	};
+}();
 
 exports.searchModel = searchModel;
 exports.populateOptionsList = populateOptionsList;
@@ -4894,11 +5078,30 @@ var _extra_options_list = __webpack_require__(341);
 
 var _ui = __webpack_require__(96);
 
+var _pdfmake = __webpack_require__(343);
+
+var _pdfmake2 = _interopRequireDefault(_pdfmake);
+
+var _vfs_fonts = __webpack_require__(344);
+
+var _vfs_fonts2 = _interopRequireDefault(_vfs_fonts);
+
+var _htmlToPdfmake = __webpack_require__(345);
+
+var _htmlToPdfmake2 = _interopRequireDefault(_htmlToPdfmake);
+
+var _alert = __webpack_require__(346);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+_pdfmake2.default.vfs = _vfs_fonts2.default.pdfMake.vfs;
+
 
 //поиск моделей по текстовому вводу либо по выбору числа оборотов/ мощности:
 var models = exports.models = {
@@ -4970,7 +5173,7 @@ var models = exports.models = {
 							if (this.itemsList.length === 0) {
 								_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 								_ui.mask.getMaskParams();
-								alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+								(0, _alert.setAlert)('err-fillDetails', 'Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
 							}
 							_context.next = 26;
 							break;
@@ -5708,7 +5911,7 @@ function setModelName() {
 
 		//обновление наименования при выборе опций селекторов:
 		function updateModelNameForSelect(parentSelector) {
-			name += !Array.from(parentSelector.children).some(function (child) {
+			if (parentSelector.children.length > 0) name += !Array.from(parentSelector.children).some(function (child) {
 				return child.selected && child.innerText === '-';
 			}) ? '-' + Array.from(parentSelector.children).find(function (child) {
 				return child.selected === true;
@@ -5716,7 +5919,6 @@ function setModelName() {
 		}
 	}, 10);
 }var motorCost = exports.motorCost = {
-	price: null,
 	currency: 'RUB',
 	rate: 1,
 	currentType: null,
@@ -5725,6 +5927,7 @@ function setModelName() {
 	calculateCost: function calculateCost(modelName, pawtype, pricelist, elements) {
 		var _this2 = this;
 
+		this.price = null;
 		this.pricelist = pricelist;
 
 		var modelItem = Array.isArray(models.itemsList) ? models.itemsList.filter(function (model) {
@@ -5898,7 +6101,7 @@ function setModelName() {
 
 							_ui.mask.removeMask();
 							console.log(_context4.t0);
-							alert('Конвертация валюты в настоящий момент невозможна. Попробуйте позднее.');
+							(0, _alert.setAlert)('err-fillDetails', 'Конвертация валюты в настоящий момент невозможна. Попробуйте позднее.');
 
 						case 23:
 							_context4.next = 28;
@@ -11567,27 +11770,13 @@ var _global_vars = __webpack_require__(95);
 
 var _localStorage = __webpack_require__(342);
 
-var _pdfmake = __webpack_require__(343);
-
-var _pdfmake2 = _interopRequireDefault(_pdfmake);
-
-var _vfs_fonts = __webpack_require__(344);
-
-var _vfs_fonts2 = _interopRequireDefault(_vfs_fonts);
-
-var _htmlToPdfmake = __webpack_require__(345);
-
-var _htmlToPdfmake2 = _interopRequireDefault(_htmlToPdfmake);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _alert = __webpack_require__(346);
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-_pdfmake2.default.vfs = _vfs_fonts2.default.pdfMake.vfs;
 function globeEvHandler() {
 	var _this = this;
 
-	(0, _ui.ls_getScrollPos)();
 	(0, _ui.ls_getBtnSelectorStyle)();
 
 	//selecting motor standard:
@@ -11645,33 +11834,10 @@ function globeEvHandler() {
 	};
 
 	//convert DOM to pdf:
-	_global_dom.btn.btn_toPdf.onclick = function () {
-		var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(e) {
-			var html;
-			return regeneratorRuntime.wrap(function _callee$(_context) {
-				while (1) {
-					switch (_context.prev = _context.next) {
-						case 0:
-							e.preventDefault();
-
-							html = (0, _htmlToPdfmake2.default)(_global_dom.areaRender.innerHTML, { imagesByReference: true });
-							//html.images.img_ref_0 = '/image/catalog/engine/din/imb3.jpg';
-
-							console.log(html);
-							_pdfmake2.default.createPdf({ content: html.content, images: html.images }).open();
-
-						case 4:
-						case 'end':
-							return _context.stop();
-					}
-				}
-			}, _callee, _this);
-		}));
-
-		return function (_x) {
-			return _ref.apply(this, arguments);
-		};
-	}();
+	_global_dom.btn.btn_toPdf.onclick = function (e) {
+		e.preventDefault();
+		(0, _selectFunctions.toPdf)();
+	};
 
 	//searching for a model against input:
 	_global_dom.inputModel.oninput = function (e) {
@@ -11681,7 +11847,7 @@ function globeEvHandler() {
 
 		setTimeout(function () {
 			(0, _selectFunctions.searchModel)(e);
-		}, 600);
+		}, 700);
 	};
 
 	//searching for a specific model agains choice of rpm or voltage:
@@ -11916,23 +12082,24 @@ function globeEvHandler() {
 
 	//reverse options selection:
 	_global_dom.btn.btn_reverseSelection.onclick = function () {
-		var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(e) {
+		var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(e) {
 			var input, modelName;
-			return regeneratorRuntime.wrap(function _callee2$(_context2) {
+			return regeneratorRuntime.wrap(function _callee$(_context) {
 				while (1) {
-					switch (_context2.prev = _context2.next) {
+					switch (_context.prev = _context.next) {
 						case 0:
 							input = _global_dom.input_reverseSelection.value.slice(0, _global_dom.input_reverseSelection.value.indexOf('-', _global_dom.input_reverseSelection.value.indexOf('/')));
 
 							if (!(_global_vars.motorStandartSetter.selected === '5AI' && input.toUpperCase().includes('ESQ') || _global_vars.motorStandartSetter.selected === 'ESQ' && input.toUpperCase().includes('5АИ') || !input.toUpperCase().includes('ESQ') && !input.toUpperCase().includes('5АИ'))) {
-								_context2.next = 7;
+								_context.next = 7;
 								break;
 							}
 
 							_ui.mask.createMask('/image/catalog/adchr/ban.svg');
 							_ui.mask.getMaskParams();
-							alert('Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
-							_context2.next = 12;
+
+							(0, _alert.setAlert)('err-fillDetails', 'Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+							_context.next = 12;
 							break;
 
 						case 7:
@@ -11941,11 +12108,11 @@ function globeEvHandler() {
 							}).join(' ') : input;
 
 							if (!(input !== _global_dom.selectorModel.value)) {
-								_context2.next = 11;
+								_context.next = 11;
 								break;
 							}
 
-							_context2.next = 11;
+							_context.next = 11;
 							return _selectFunctions.models.getModel(modelName);
 
 						case 11:
@@ -11954,14 +12121,14 @@ function globeEvHandler() {
 
 						case 12:
 						case 'end':
-							return _context2.stop();
+							return _context.stop();
 					}
 				}
-			}, _callee2, _this);
+			}, _callee, _this);
 		}));
 
-		return function (_x2) {
-			return _ref2.apply(this, arguments);
+		return function (_x) {
+			return _ref.apply(this, arguments);
 		};
 	}();
 
@@ -11987,7 +12154,7 @@ function globeEvHandler() {
 				}
 				return true;
 			} else {
-				alert('Only copy paste allowed!');
+				(0, _alert.setAlert)('err-fillDetails', 'Разрешены только копирование и вставка!');
 				e.preventDefault();
 				e.target.blur();
 			}
@@ -11996,10 +12163,6 @@ function globeEvHandler() {
 
 	window.onresize = function () {
 		_ui.mask.mask !== undefined && typeof _ui.mask.mask !== 'undefined' && _ui.mask.getMaskParams();
-	};
-
-	window.onbeforeunload = function () {
-		return (0, _localStorage.ls_keepScrollPosY)(document.documentElement.scrollTop);
 	};
 }
 
@@ -92881,6 +93044,54 @@ module.exports = function(htmlText, options) {
   return new htmlToPdfMake(htmlText, options);
 }
 
+
+/***/ }),
+/* 346 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.setAlert = undefined;
+
+var _global_dom = __webpack_require__(66);
+
+var setAlert = exports.setAlert = function setAlert(type, msg, timeout) {
+	Array.from(_global_dom.main.children).forEach(function (child) {
+		return child.classList.contains('alert') && child.remove();
+	});
+
+	var alert = document.createElement('div');
+	switch (type) {
+		case 'err-fillDetails':
+			alert.setAttribute('class', 'alert alert-danger d-flex align-items-center');
+			alert.innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg> ' + msg;
+			break;
+
+		case 'success':
+			alert.setAttribute('class', 'alert alert-success d-flex align-items-center');
+			alert.innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg> ' + msg;
+			break;
+
+		case 'info':
+			alert.setAttribute('class', 'alert alert-primary d-flex align-items-center');
+			alert.innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg> ' + msg;
+			break;
+	}
+
+	_global_dom.main.insertAdjacentElement('afterbegin', alert);
+
+	if (timeout === undefined || typeof timeout === 'undefined') {
+		timeout = 2000;
+	}
+
+	setTimeout(function () {
+		alert.remove();
+	}, timeout);
+};
 
 /***/ })
 /******/ ]);

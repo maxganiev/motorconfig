@@ -23,6 +23,8 @@
     "webpack-dev-server": "^2.9.4"
   },
   "dependencies": {
-    "node-sass": "^7.0.1"
+    "html-to-pdfmake": "^2.3.10",
+    "node-sass": "^7.0.1",
+    "pdfmake": "^0.2.5"
   }
 }

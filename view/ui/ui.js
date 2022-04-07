@@ -46,16 +46,6 @@ export function ls_getBtnSelectorStyle() {
 	}
 }
 
-export function ls_getScrollPos() {
-	if (localStorage.getItem('scrollPosY') === null) {
-		return;
-	} else {
-		setTimeout(() => {
-			window.scrollTo(0, localStorage.getItem('scrollPosY'));
-		}, 10);
-	}
-}
-
 export function recalculateHeight(parentElem) {
 	parentElem.style.height = Array.from(parentElem.children).reduce((acc, curr) => acc + curr.clientHeight, 0) * 1.15 + 'px';
 	main.style.height = '100%';
