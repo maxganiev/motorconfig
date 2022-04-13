@@ -1,7 +1,8 @@
-import { areaSelection, checkboxConicShaft } from '../ux/global_dom';
+import { areaSelection, checkboxConicShaft, selectorBrakes } from '../ux/global_dom';
 import { optionsConfig } from './base_options_list';
 import { populateOptionsList, optionsSelector } from '../ux/selectFunctions';
 import { recalculateHeight } from '../ui/ui';
+import { areaSelection_childs_num_on_init_render } from '../ux/global_vars';
 
 //заливка доступного для габарита опционала при выборе модели двигателя:
 export function fillExtraOptions() {
@@ -9,33 +10,7 @@ export function fillExtraOptions() {
 		optionsConfig;
 
 	//проверяем были ли уже отрендерены элементы для остальных опций, которые не было жестко вбиты в исходный хмтл; если нет - добавляем их:
-	if (areaSelection.children.length <= 6) {
-		//чекбокс для выбора вибродатчиков:
-		createCheckBoxes(areaSelection, 'checkbox-vibrosensors', vibroSensors.id, !vibroSensors.selectable, vibroSensors.type, null);
-
-		//чекбокс для выбора антиконденсатного подогрева:
-		createCheckBoxes(
-			areaSelection,
-			'checkbox-antiCondenseHeater',
-			antiCondensingHeater.id,
-			!antiCondensingHeater.selectable,
-			antiCondensingHeater.type,
-			null
-		);
-
-		//чекбокс для выбора токоизолированного подшипника:
-		createCheckBoxes(
-			areaSelection,
-			'checkbox-currentInsulatingBearing',
-			currentInsulatingBearing.id,
-			!currentInsulatingBearing.selectable,
-			currentInsulatingBearing.type,
-			currentInsulatingBearing.checked
-		);
-
-		//селект для выбора импортных подшипников:
-		createSelects(areaSelection, 'selector-importBearings', importBearings);
-
+	if (areaSelection.children.length <= areaSelection_childs_num_on_init_render) {
 		//заливка кнопок для выбора датчиков температуры:
 		const listItem = document.createElement('li');
 		const column_WindingSensors = document.createElement('ul');
@@ -69,7 +44,33 @@ export function fillExtraOptions() {
 		listItem.appendChild(column_BearingSensors);
 
 		listItem.classList.add('flex-row');
-		areaSelection.appendChild(listItem);
+		areaSelection.insertAdjacentElement('afterbegin', listItem);
+
+		//чекбокс для выбора вибродатчиков:
+		createCheckBoxes(areaSelection, 'checkbox-vibrosensors', vibroSensors.id, !vibroSensors.selectable, vibroSensors.type, null);
+
+		//чекбокс для выбора антиконденсатного подогрева:
+		createCheckBoxes(
+			areaSelection,
+			'checkbox-antiCondenseHeater',
+			antiCondensingHeater.id,
+			!antiCondensingHeater.selectable,
+			antiCondensingHeater.type,
+			null
+		);
+
+		//чекбокс для выбора токоизолированного подшипника:
+		createCheckBoxes(
+			areaSelection,
+			'checkbox-currentInsulatingBearing',
+			currentInsulatingBearing.id,
+			!currentInsulatingBearing.selectable,
+			currentInsulatingBearing.type,
+			currentInsulatingBearing.checked
+		);
+
+		//селект для выбора импортных подшипников:
+		createSelects(areaSelection, 'selector-importBearings', importBearings);
 
 		//выбор климатического исполнения:
 		createSelects(areaSelection, 'selector-climateCat', climateCat);
@@ -191,7 +192,9 @@ function createSelects(parentElem, selectId, srcDataToFillOptions) {
 
 	populateOptionsList([selector], [srcDataToFillOptions], 'populateOptionsList');
 
-	selectId !== 'selector-encoderVoltage' && selectId !== 'selector-outputSignal' && parentElem.appendChild(listItem);
+	selectId !== 'selector-encoderVoltage' &&
+		selectId !== 'selector-outputSignal' &&
+		parentElem.insertBefore(listItem, selectorBrakes.parentElement);
 }
 
 //вывод предупреждения при отсутствии выбора токоиз. подшипника для двигателей >= 200 габ.:

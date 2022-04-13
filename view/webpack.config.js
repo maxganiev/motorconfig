@@ -4,6 +4,7 @@ module.exports = {
 	entry: {
 		app: ['babel-polyfill', './index.js'],
 	},
+
 	watch: true,
 	output: {
 		path: path.resolve(__dirname, 'build'),

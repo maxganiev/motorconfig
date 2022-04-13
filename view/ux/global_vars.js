@@ -1,3 +1,4 @@
+import { areaSelection } from './global_dom';
 export const regex = /^(?!\s*$).+/;
 export const motorStandartSetter = {
 	//5ai by default when page first uploaded:
@@ -6,3 +7,4 @@ export const motorStandartSetter = {
 		this.selected = btnId === 'btn-5ai-select' ? '5AI' : 'ESQ';
 	},
 };
+export const areaSelection_childs_num_on_init_render = areaSelection.children.length;

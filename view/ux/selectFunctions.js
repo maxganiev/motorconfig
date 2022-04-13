@@ -39,7 +39,7 @@ export const models = {
 				const formData = new FormData();
 				formData.append('type', motorStandartSetter.selected);
 				formData.append('keyword', query.toUpperCase());
-				const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_input';
+				const url = '/index.php?route=tool/adchr/adchr/get_data_by_input';
 
 				mask.createMask('/image/catalog/adchr/spinner.svg');
 				mask.getMaskParams();
@@ -76,7 +76,7 @@ export const models = {
 				const postData = [{ power: String(query[0]) }, { rpm: String(query[1]) }, { type: motorStandartSetter.selected }];
 				postData.forEach((data) => formData.append(Object.keys(data)[0], Object.values(data)[0]));
 
-				const url = '/index.php?route=tool/adchr/test/adchr/get_data_by_power_and_rpm_selection';
+				const url = '/index.php?route=tool/adchr/adchr/get_data_by_power_and_rpm_selection';
 
 				mask.createMask('/image/catalog/adchr/spinner.svg');
 				mask.getMaskParams();
@@ -93,6 +93,12 @@ export const models = {
 				//console.log(res);
 				this.itemsList = res;
 				mask.removeMask();
+
+				if (this.itemsList.length === 0) {
+					mask.createMask('/image/catalog/adchr/ban.svg');
+					mask.getMaskParams();
+					setAlert('err-fillDetails', 'Модель не найдена, скорректируйте поиск или выберите корректный тип двигателя');
+				}
 			} catch (error) {
 				console.log(error);
 				mask.createMask('/image/catalog/adchr/ban.svg');
@@ -121,6 +127,12 @@ export const models = {
 
 			const frameSize = Number(sliced.slice(0, sliced.indexOf(false)).join(''));
 			option.setAttribute('data-itemId', frameSize);
+
+			//excluding BUGs(Ж):
+			if (option.innerText.includes('Ж')) {
+				option.disabled = true;
+			}
+
 			selectorModel.appendChild(option);
 		}
 
@@ -265,7 +277,8 @@ export function searchModel(e) {
 	}
 
 	//hiding/showing motor type select btns:
-	btn.selectorMotor_5ai.parentElement.style.visibility = e.target.id === 'input-model' && e.target.value !== '' ? 'hidden' : 'visible';
+	btn.selectorMotor_5ai.disabled = btn.selectorMotor_din.disabled =
+		e.target.id === 'input-model' && e.target.value !== '' ? true : false;
 
 	//cleaning up selector options list while typing or re-selecting:
 	Array.from(selectorBrakes.children).forEach((child, index) => index !== 0 && child.remove());
@@ -448,7 +461,7 @@ export async function getOptions(selectorsId, operationType) {
 				formData.append(Object.keys(obj)[0], Object.values(obj)[0]);
 			});
 
-			const url = '/index.php?route=tool/adchr/test/adchr/get_attrs';
+			const url = '/index.php?route=tool/adchr/adchr/get_attrs';
 			mask.createMask('/image/catalog/adchr/spinner.svg');
 			mask.getMaskParams();
 
@@ -491,14 +504,16 @@ export async function getOptions(selectorsId, operationType) {
 			setModelName();
 			mask.removeMask();
 		} catch (error) {
-			mask.createMask('/image/catalog/adchr/ban.svg');
-			mask.getMaskParams();
+			// mask.createMask('/image/catalog/adchr/ban.svg');
+			// mask.getMaskParams();
 			console.log(error);
-			// setAlert(
-			// 	'err-fillDetails',
-			// 	'Возникли неполадки. Попробуйте перезагрузить страницу, если проблема повторится - проверьте ввод',
-			// 	4000
-			// );
+			mask.removeMask();
+
+			//иногда сервер не успевает отрабатывать и возвращает предупреждение (по факту не ошибка). В случае возникновения реальной ошибки баннер остается на месте, и в этом случае необходимо вывести ошибку пользователю:
+			setTimeout(() => {
+				Array.from(main.children).some((child) => child.className === mask) &&
+					setAlert('err-fillDetails', 'Ошибка загрузки. Проверьте правильность ввода модели', 4000);
+			}, 3000);
 		}
 
 		//resetting checkboxes:
@@ -649,6 +664,7 @@ function setDrawing(frameSize, brakeType, encoderIsChecked, ventSystemOptionValu
 	imageDrawing.setAttribute('src', completePath);
 }
 
+//данные для таблицы размеров:
 export function setChartConnectionDims(dataChart) {
 	//first checking if returned data is object:
 	if (typeof dataChart === 'object' && !Array.isArray(dataChart)) {
@@ -671,10 +687,24 @@ export function setChartConnectionDims(dataChart) {
 
 			chart.innerHTML = `
 			<tr>
-			${srcObj.map((param) => `<th> ${Object.keys(param)[0]} </th>`).join('')}
+			${srcObj
+				.map((param) =>
+					Object.keys(param)[0] === 'l1'
+						? //empty slot to divide data:
+						  `<th style="border: none; width: 10px;"> </th> <th> ${Object.keys(param)[0]} </th>`
+						: `<th> ${Object.keys(param)[0]} </th>`
+				)
+				.join('')}
 			</tr>
 			<tr>
-			${srcObj.map((param) => `<td> ${Object.values(param)[0]} </td>`).join('')}
+			${srcObj
+				.map((param) =>
+					Object.keys(param)[0] === 'l1'
+						? //empty slot to divide data:
+						  `<td style="border: none; width: 10px;"> </td> <td> ${Object.values(param)[0]} </td>`
+						: `<td> ${Object.values(param)[0]} </td>`
+				)
+				.join('')}
 			</tr>
 			`;
 
@@ -1019,7 +1049,7 @@ export function setModelName() {
 export async function selectOptionsReversevely(e) {
 	try {
 		const subchilds = Array.from(areaSelection.children)
-			.slice(1)
+			.concat(selectorPaws)
 			.map((child) =>
 				child.firstElementChild.tagName === 'UL'
 					? Array.from(child.firstElementChild.children)
@@ -1035,7 +1065,7 @@ export async function selectOptionsReversevely(e) {
 			.flat(1)
 			.filter((subchild) => subchild.tagName !== 'LABEL');
 
-		//	console.log(subchilds);
+		//console.log(subchilds);
 
 		const elements = [];
 		subchilds.forEach((sub) => recurse(sub));
@@ -1184,12 +1214,12 @@ export const motorCost = {
 		//some prices are missed atm, handle them separately:
 		if (Number(this.currentType.price) - 1 < 0 || Number(this.currentType.brake.price) < 1) {
 			para_pricePrintout.textContent = 'Стоимость необходимо уточнять.';
-			btn.btn_expandOffer.style.visibility = 'hidden';
+			btn.btn_currencyConverter.style.visibility = btn.btn_expandOffer.style.visibility = 'hidden';
 			return;
 		}
 
 		this.price = selectorBrakes.value === '-' ? Number(this.currentType.price) : Number(this.currentType.brake.price);
-		btn.btn_expandOffer.style.visibility = 'visible';
+		btn.btn_currencyConverter.style.visibility = btn.btn_expandOffer.style.visibility = 'visible';
 
 		//console.log(this.pricelist);
 
@@ -1286,13 +1316,27 @@ export const motorCost = {
 			}
 		});
 
-		//console.log(this.selectedItems);
+		//omitting items with price === 0:
+		const temp = Object.keys(this.pricelist).reduce(
+			(acc, curr) =>
+				this.pricelist[curr] == 0 && this.selectedItems.findIndex((item) => item.dataAttr === curr) !== -1
+					? [...acc, curr]
+					: acc,
+			{}
+		);
+		Array.isArray(temp) &&
+			temp.forEach((prop) => {
+				const index = this.selectedItems.findIndex((item) => item.dataAttr === prop);
+				this.selectedItems.splice(index, 1);
+			});
 
 		//options prices for clients X2 (href for managers include 'manager' string):
 		this.price += Object.keys(this.pricelist).reduce(
 			(acc, curr) =>
-				this.selectedItems.findIndex((attr) => attr.dataAttr === curr) !== -1
-					? (acc += window.location.href.includes('manager') ? Number(pricelist[curr]) : Number(pricelist[curr] * 2))
+				this.selectedItems.findIndex((item) => item.dataAttr === curr) !== -1
+					? (acc += window.location.href.includes('manager')
+							? Number(this.pricelist[curr])
+							: Number(this.pricelist[curr] * 2))
 					: acc,
 			0
 		);
@@ -1336,7 +1380,7 @@ export const motorCost = {
 	printResult: function () {
 		if (isNaN(this.price)) {
 			para_pricePrintout.textContent = 'Стоимость необходимо уточнять.';
-			btn.btn_expandOffer.style.visibility = 'hidden';
+			btn.btn_currencyConverter.style.visibility = btn.btn_expandOffer.style.visibility = 'hidden';
 		} else {
 			para_pricePrintout.innerHTML =
 				this.currency === 'RUB'
@@ -1345,7 +1389,7 @@ export const motorCost = {
 					  )} руб., включая НДС 20%`
 					: ` <strong> Стоимость итого: </strong>${new Intl.NumberFormat('kk-KK').format(this.price.toFixed(2))} тнг.`;
 
-			btn.btn_expandOffer.style.visibility = 'visible';
+			btn.btn_currencyConverter.style.visibility = btn.btn_expandOffer.style.visibility = 'visible';
 		}
 	},
 
@@ -1394,6 +1438,8 @@ export const motorCost = {
 		`;
 
 		main.insertAdjacentElement('afterbegin', list_pricelistExpanded);
+
+		list_pricelistExpanded.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
 	},
 };
 
@@ -1401,6 +1447,7 @@ export const motorCost = {
 export async function toPdf() {
 	const img = Array.from(areaRender.children).find((child) => child.tagName === 'IMG');
 	const logo_url = await getBase64FromUrl('/image/catalog/adchr/logo_header.png');
+	let drawing_url;
 
 	//pdfmake lib needs url to be 64-based encoded thus have it converted:
 	async function getBase64FromUrl(url) {
@@ -1416,17 +1463,12 @@ export async function toPdf() {
 		});
 	}
 
-	//prevent unnecessary call if img url has already been converted:
-	if (img.src.includes('data')) {
-		getPdf();
-		return;
-	}
 	try {
 		//workaround to bypass CORS (proxyfying image request via backend):
 		const data = new FormData();
 		data.append('src', img.src);
 
-		const req = await fetch('/index.php?route=tool/adchr/test/adchr/proxy_blob', {
+		const req = await fetch('/index.php?route=tool/adchr/adchr/proxy_blob', {
 			method: 'POST',
 			body: data,
 		});
@@ -1435,9 +1477,7 @@ export async function toPdf() {
 
 		//get workable link for blob:
 		const objectURL = URL.createObjectURL(res);
-		const url = await getBase64FromUrl(objectURL);
-		//reassing img url with 64-based encoded (now OK to supply to pdfmake):
-		img.src = url;
+		drawing_url = await getBase64FromUrl(objectURL);
 		getPdf();
 	} catch (error) {
 		console.log(error);
@@ -1453,7 +1493,7 @@ export async function toPdf() {
 				: `Электродвигатель ${document.getElementById('model-name').textContent}`
 		} </h2>
 
-		<img src="${img.src}" style="width: 500px; margin-top: 20px"; />
+		<img src="${drawing_url}" style="width: 500px; margin-top: 20px"; />
 
 		<h3> ${Array.from(areaRender.children).find((child) => child.tagName === 'H3').textContent} </h3>
 
@@ -1527,28 +1567,6 @@ export async function toPdf() {
 		}
 
 		`;
-		console.log(motorCost.price);
-		//calc table dims:
-		const tableDims = {
-			width: chart_connectionParams.offsetWidth,
-			margin:
-				parseFloat(window.getComputedStyle(chart_connectionParams).marginLeft) +
-				parseFloat(window.getComputedStyle(chart_connectionParams).marginRight),
-			padding:
-				parseFloat(window.getComputedStyle(chart_connectionParams).paddingLeft) +
-				parseFloat(window.getComputedStyle(chart_connectionParams).paddingRight),
-			border:
-				parseFloat(window.getComputedStyle(chart_connectionParams).borderLeftWidth) +
-				parseFloat(window.getComputedStyle(chart_connectionParams).borderRightWidth),
-
-			getTotal: function () {
-				this.total = Object.keys(this)
-					.filter((prop) => typeof this[prop] !== 'function')
-					.reduce((acc, curr) => acc + this[curr], 0);
-			},
-		};
-
-		tableDims.getTotal();
 
 		const html = htmlToPdfmake(toParse, {
 			defaultStyles: {
@@ -1560,7 +1578,7 @@ export async function toPdf() {
 					fontSize: 10,
 					tableAutoSize: true,
 					marginTop: 10,
-					marginLeft: (areaRender.clientWidth - tableDims.total) / 2,
+					marginLeft: (areaRender.clientWidth - chart_connectionParams.clientWidth) / 5,
 				},
 				ul: { listType: 'none', fontSize: 9 },
 				p: { alignment: 'center', fontSize: 10, bold: true },

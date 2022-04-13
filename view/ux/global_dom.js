@@ -26,3 +26,4 @@ export const btn = {
 
 export const input_reverseSelection = document.getElementById('input-reverse-selection');
 export const para_pricePrintout = document.getElementById('para-price-printout');
+export const icn_clearInput = document.getElementById('icn-clear-input');

@@ -10,6 +10,10 @@ import {
 	selectorVentSystem,
 	btn,
 	input_reverseSelection,
+	main,
+	areaFilter,
+	areaSelection,
+	icn_clearInput,
 } from './global_dom';
 import {
 	searchModel,
@@ -23,9 +27,9 @@ import {
 	toPdf,
 } from './selectFunctions';
 import { optionsConfig } from '../motordata/base_options_list';
-import { mask, ls_getBtnSelectorStyle } from '../ui/ui';
+import { mask } from '../ui/ui';
 import { motorStandartSetter } from './global_vars';
-import { ls_keepStandardChoice } from '../storage/localStorage';
+import { ls_keepStandardChoice, ls_getBtnSelectorStyle } from '../storage/localStorage';
 import { setAlert } from './alert';
 
 export function globeEvHandler() {
@@ -38,9 +42,10 @@ export function globeEvHandler() {
 				if (Array.from(e.target.classList).some((className) => className.includes('btn-option-non-selected'))) {
 					btn.selectorMotor_din.classList.replace('btn-option-selected', 'btn-option-non-selected');
 					e.target.classList.replace('btn-option-non-selected', 'btn-option-selected');
-					checkboxConicShaft.parentElement.style.display = 'block';
+					checkboxConicShaft.parentElement.classList.remove('listItem-hidden');
 
 					motorStandartSetter.setMotorStandart(e.target.id);
+					inputModel.value = '5АИ ';
 					ls_keepStandardChoice('5AI');
 					mask.mask !== undefined && typeof mask.mask !== 'undefined' && mask.getMaskParams();
 					e.preventDefault();
@@ -52,9 +57,10 @@ export function globeEvHandler() {
 				if (Array.from(e.target.classList).some((className) => className.includes('btn-option-non-selected'))) {
 					btn.selectorMotor_5ai.classList.replace('btn-option-selected', 'btn-option-non-selected');
 					e.target.classList.replace('btn-option-non-selected', 'btn-option-selected');
-					checkboxConicShaft.parentElement.style.display = 'none';
+					checkboxConicShaft.parentElement.classList.add('listItem-hidden');
 
 					motorStandartSetter.setMotorStandart(e.target.id);
+					inputModel.value = 'ESQ ';
 					ls_keepStandardChoice('ESQ');
 					mask.mask !== undefined && typeof mask.mask !== 'undefined' && mask.getMaskParams();
 					e.preventDefault();
@@ -79,7 +85,6 @@ export function globeEvHandler() {
 	//expand prices:
 	btn.btn_expandOffer.onclick = (e) => {
 		e.preventDefault();
-
 		motorCost.expandPricelist();
 	};
 
@@ -95,9 +100,18 @@ export function globeEvHandler() {
 			input_reverseSelection.value = '';
 		}
 
+		icn_clearInput.style.visibility = e.target.value.length !== 0 ? 'visible' : 'hidden';
+
 		setTimeout(() => {
 			searchModel(e);
 		}, 700);
+	};
+
+	//clear input:
+	icn_clearInput.onclick = (e) => {
+		inputModel.value = '';
+		btn.selectorMotor_5ai.disabled = btn.selectorMotor_din.disabled = false;
+		e.target.style.visibility = 'hidden';
 	};
 
 	//searching for a specific model agains choice of rpm or voltage:
@@ -107,7 +121,8 @@ export function globeEvHandler() {
 		}
 
 		e.target.value !== '-' && searchModel(e);
-		btn.selectorMotor_5ai.parentElement.style.visibility = e.target.value !== '-' ? 'hidden' : 'visible';
+		btn.selectorMotor_5ai.disabled = btn.selectorMotor_din.disabled =
+			e.target.id === 'input-model' && e.target.value !== '' ? true : false;
 	};
 
 	//selecting a motor model:
@@ -289,6 +304,12 @@ export function globeEvHandler() {
 		}
 	});
 
+	areaSelection.onclick = areaFilter.onclick = () => {
+		//hide modals:
+		Array.from(main.children).some((child) => child.id === 'list-pricelist-expanded') &&
+			document.getElementById('list-pricelist-expanded').remove();
+	};
+
 	document.body.addEventListener('click', (e) => {
 		//options-sensors:
 		if (e.target.id.includes('btn-options-sensors-id')) {
@@ -369,10 +390,10 @@ export function globeEvHandler() {
 		if (inputModel.value.length !== 0 || selectorPower !== '-' || selectorRpm !== '-') {
 			inputModel.value = '';
 			selectorPower.children[0].selected = selectorRpm.children[0].selected = true;
-			btn.selectorMotor_5ai.parentElement.style.visibility = 'visible';
 		}
 
 		selectorPower.value = selectorRpm.value = '-';
+		btn.selectorMotor_5ai.disabled = btn.selectorMotor_din.disabled = false;
 
 		const permitted1 = ['v', 'a', 'c', 'x', 'z', 'r'];
 		const permitted2 = ['Tab', 'Control', 'Alt', 'Shift', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Backspace'];

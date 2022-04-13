@@ -1,7 +1,9 @@
 import { main } from './global_dom';
 
 export const setAlert = (type, msg, timeout) => {
-	Array.from(main.children).forEach((child) => child.classList.contains('alert') && child.remove());
+	if (Array.from(main.children).some((child) => child.className.includes('alert'))) {
+		return;
+	}
 
 	const alert = document.createElement('div');
 	switch (type) {
@@ -28,6 +30,11 @@ export const setAlert = (type, msg, timeout) => {
 	}
 
 	setTimeout(() => {
-		alert.remove();
+		alert.style.opacity = 0;
+		alert.style.transition = 'opacity 0.6s ease-out';
+
+		setTimeout(() => {
+			alert.remove();
+		}, 650);
 	}, timeout);
 };

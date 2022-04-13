@@ -383,6 +383,15 @@ export const optionsConfig = {
 				vent_consumedPower: { data: 800, description: 'Потребляемая мощность, Вт' },
 				vent_consumedCurrent: { data: '1.55', description: 'Потребляемый ток, А' },
 			},
+
+			{
+				id: 400,
+				brakeMoment: { data: 'нет данных', description: 'Тормозной момент, Н х м (Ном./Макс.)' },
+				brake_consumedPower: { data: 'нет данных', description: 'Потребляемая мощность, Вт' },
+				reactionTime: { data: 'нет данных', description: 'Время срабатывания, мс' },
+				vent_consumedPower: { data: 'нет данных', description: 'Потребляемая мощность, Вт' },
+				vent_consumedCurrent: { data: 'нет данных', description: 'Потребляемый ток, А' },
+			},
 		];
 
 		//лапы и фланцы (UI: select):
