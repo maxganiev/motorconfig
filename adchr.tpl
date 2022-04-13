@@ -32,6 +32,7 @@
 					<li>
 						<label for="input-model"> Наименование </label>
 						<input type="text" placeholder="Начните ввод..." id="input-model" class="form-control" />
+						<img src="/image/catalog/adchr/times-solid-red.svg" alt="clear input" id="icn-clear-input" />
 					</li>
 
 					<li>
@@ -86,6 +87,18 @@
 							<option value="500">500</option>
 						</select>
 					</li>
+
+				<li>
+					<label for="selector-model"> Модель электродвигателя </label>
+						<select id="selector-model" class="form-control form-control-sm">
+							<option value="-">-</option>
+						</select>
+					</li>
+
+					<li>
+						<label for="selector-paws"> Тип исполнения </label>
+						<select id="selector-paws" class="form-control form-control-sm"></select>
+					</li>
 				</ul>
 			</section>
 
@@ -93,20 +106,8 @@
 			<section class="area-selection" id="area-selection">
 				<ul class="list">
 					<li>
-						<label for="selector-model"> Модель электродвигателя </label>
-						<select id="selector-model" class="form-control form-control-sm">
-							<option value="-">-</option>
-						</select>
-					</li>
-
-					<li>
 						<label for="selector-breaks"> Тип тормозов </label>
 						<select id="selector-breaks" class="form-control form-control-sm"></select>
-					</li>
-
-					<li>
-						<label for="selector-paws"> Тип исполнения </label>
-						<select id="selector-paws" class="form-control form-control-sm"></select>
 					</li>
 
 					<li>
